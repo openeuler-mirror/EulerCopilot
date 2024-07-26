@@ -1,0 +1,100 @@
+{{- if .Values.euler_copilot.rag.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-deploy-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: rag-{{ .Release.Name }}
+  annotations:
+    checksum/secret: {{ include (print $.Template.BasePath "/rag/rag-secret.yaml") . | sha256sum }}
+spec:
+  replicas: {{ .Values.globals.replicaCount }}
+  selector:
+    matchLabels:
+      app: rag-{{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: rag-{{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1001
+      imagePullSecrets:
+        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: rag
+          image: "{{if ne ( .Values.euler_copilot.rag.image.registry | toString ) ""}}{{ .Values.euler_copilot.rag.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.rag.image.repository }}:{{ .Values.euler_copilot.rag.image.tag | toString }}"
+          imagePullPolicy: {{ if ne ( .Values.euler_copilot.rag.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.rag.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          ports:
+            - containerPort: 8005
+              protocol: TCP
+            - containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health_check/ping
+              port: 8005
+              scheme: HTTP
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 90
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: DAGSTER_DB_CONNECTION
+              value: postgresql+psycopg2://postgres:{{ .Values.euler_copilot.pgsql.passwords.userPassword }}@pgsql-db-{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:5432/postgres
+          volumeMounts:
+            - mountPath: /rag-service/config
+              name: rag-shared-secret-volume
+            - mountPath: /rag-service/scripts/docs
+              name: rag-docs
+            - mountPath: /tmp
+              name: rag-tmp
+          securityContext:
+            readOnlyRootFilesystem: {{ .Values.euler_copilot.rag.readOnly }}
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            {{- toYaml .Values.euler_copilot.rag.resources | nindent 12 }}
+      initContainers:
+        - name: rag-copy-secret
+          image: "{{if ne ( .Values.euler_copilot.init.image.registry | toString ) ""}}{{ .Values.euler_copilot.init.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.init.image.repository }}:{{ .Values.euler_copilot.init.image.tag | toString }}"
+          restartPolicy: Always
+          imagePullPolicy: {{ if ne ( .Values.euler_copilot.init.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.init.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          env:
+            - name: CHECK_URL
+              value: http://rag-service-{{ .Release.Name }}.euler-copilot.svc.cluster.local:8005/health_check/ping
+            - name: INTERVAL
+              value: "60"
+            - name: CONFIG_FILES
+              value: ".env"
+          volumeMounts:
+            - mountPath: /config
+              name: rag-secret-volume
+            - mountPath: /config-rw
+              name: rag-shared-secret-volume
+      volumes:
+        - name: rag-secret-volume
+          secret:
+            secretName: rag-secret-{{ .Release.Name }}
+            items:
+              - key: .env
+                path: .env
+        - name: rag-shared-secret-volume
+          emptyDir:
+            medium: Memory
+        - name: rag-tmp
+          emptyDir:
+            medium: Memory
+        - name: rag-docs
+          hostPath:
+            path: {{ .Values.euler_copilot.rag.docs_dir }}
+            type: Directory
+{{- end }}

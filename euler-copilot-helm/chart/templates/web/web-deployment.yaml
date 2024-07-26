@@ -1,0 +1,74 @@
+{{- if .Values.euler_copilot.web.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: web-{{ .Release.Name }}
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/web/web-config.yaml") . | sha256sum }}
+spec:
+  replicas: {{ .Values.globals.replicaCount }}
+  selector:
+    matchLabels:
+      app: web-{{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: web-{{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1001
+      imagePullSecrets:
+        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: web
+          image: "{{ if ne ( .Values.euler_copilot.web.image.registry | toString ) ""}}{{ .Values.euler_copilot.web.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.web.image.repository }}:{{ .Values.euler_copilot.web.image.tag | toString }}"
+          imagePullPolicy: {{ if ne ( .Values.euler_copilot.web.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.web.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 90
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+          volumeMounts:
+            - mountPath: /config
+              name: web-config-volume
+            - mountPath: /var/lib/nginx/tmp
+              name: web-tmp
+            - mountPath: /home/eulercopilot/.env
+              name: web-env-volume
+              subPath: .env
+          resources:
+            {{- toYaml .Values.euler_copilot.web.resources | nindent 12 }}
+          securityContext:
+            readOnlyRootFilesystem: {{ .Values.euler_copilot.web.readOnly }}
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+      restartPolicy: Always
+      volumes:
+        - name: web-config-volume
+          emptyDir:
+            medium: Memory
+        - name: web-env-volume
+          configMap:
+            name: web-config-{{ .Release.Name }}
+        - name: web-tmp
+          emptyDir:
+            medium: Memory
+{{- end }}

@@ -1,0 +1,70 @@
+{{- if .Values.euler_copilot.mysql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deploy-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: mysql-{{ .Release.Name }}
+  annotations:
+    checksum/secret: {{ include (print $.Template.BasePath "/mysql/mysql-secret.yaml") . | sha256sum }}
+spec:
+  replicas: {{ .Values.globals.replicaCount }}
+  selector:
+    matchLabels:
+      app: mysql-{{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: mysql-{{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      imagePullSecrets:
+        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: mysql
+          image: "{{ if ne (.Values.euler_copilot.mysql.image.registry | toString ) "" }}{{ .Values.euler_copilot.mysql.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.mysql.image.repository }}:{{ .Values.euler_copilot.mysql.image.tag | toString }}"
+          imagePullPolicy: {{ if ne (.Values.euler_copilot.mysql.image.imagePullPolicy | toString) "" }}{{ .Values.euler_copilot.mysql.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          args:
+            - "--character-set-server=utf8mb4"
+            - "--collation-server=utf8mb4_unicode_ci"
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin -h 127.0.0.1 -u $MYSQL_USER --password=$MYSQL_PASSWORD ping
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 90
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: MYSQL_DATABASE
+              value: "euler_copilot"
+            - name: MYSQL_USER
+              value: "euler_copilot"
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret-{{ .Release.Name }}
+                  key: mysql-root-password
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret-{{ .Release.Name }}
+                  key: mysql-password
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-data
+          resources:
+            {{- toYaml .Values.euler_copilot.mysql.resources | nindent 12 }}
+      restartPolicy: Always
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-pvc-{{ .Release.Name }}
+{{- end }}

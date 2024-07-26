@@ -1,0 +1,63 @@
+{{- if .Values.euler_copilot.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deploy-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: redis-{{ .Release.Name }}
+  annotations:
+    rollme: {{ randAlphaNum 5 | quote }}
+spec:
+  replicas: {{ .Values.globals.replicaCount }}
+  selector:
+    matchLabels:
+      app: redis-{{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: redis-{{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      imagePullSecrets:
+        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: redis
+          image: "{{ if ne (.Values.euler_copilot.redis.image.registry | toString) "" }}{{ .Values.euler_copilot.redis.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.redis.image.repository }}:{{ .Values.euler_copilot.redis.image.tag | toString }}"
+          imagePullPolicy: {{ if ne (.Values.euler_copilot.redis.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.redis.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          command:
+            - redis-server
+            - --requirepass $(REDIS_PASSWORD)
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 90
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret-{{ .Release.Name }}
+                  key: redis-password
+          volumeMounts:
+            - mountPath: /tmp
+              name: redis-tmp
+          securityContext:
+            readOnlyRootFilesystem: {{ .Values.euler_copilot.redis.readOnly }}
+          resources:
+            {{- toYaml .Values.euler_copilot.redis.resources | nindent 12 }}
+      restartPolicy: Always
+      volumes:
+        - name: redis-tmp
+          emptyDir:
+            medium: Memory
+{{- end }}

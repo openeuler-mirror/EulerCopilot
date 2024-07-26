@@ -1,0 +1,24 @@
+{{- if .Values.euler_copilot.rag.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-service-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.euler_copilot.rag.service.type }}
+  selector:
+    app: rag-{{ .Release.Name }}
+  ports:
+    - name: rag-port
+      port: 8005
+      targetPort: 8005
+      {{- if (and (eq .Values.euler_copilot.rag.service.type "NodePort") .Values.euler_copilot.rag.service.nodePort) }}
+      nodePort: {{ .Values.euler_copilot.rag.service.nodePort }}
+      {{- end }}
+    - name: rag-dagster-port
+      port: 3000
+      targetPort: 3000
+      {{- if (and (eq .Values.euler_copilot.rag.service.type "NodePort") .Values.euler_copilot.rag.service.nodePort) }}
+      nodePort: {{ .Values.euler_copilot.rag.service.nodePortDagster }}
+      {{- end }}
+{{- end }}

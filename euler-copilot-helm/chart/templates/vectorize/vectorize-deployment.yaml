@@ -1,0 +1,100 @@
+{{- if .Values.euler_copilot.vectorize.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vectorize-deploy-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: vectorize-{{ .Release.Name }}
+  annotations:
+    checksum/secret: {{ include (print $.Template.BasePath "/vectorize/vectorize-secret.yaml") . | sha256sum }}
+spec:
+  replicas: {{ .Values.globals.replicaCount }}
+  selector:
+    matchLabels:
+      app: vectorize-{{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: vectorize-{{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1001
+      imagePullSecrets:
+        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: vectorize
+          image: "{{ if ne ( .Values.euler_copilot.vectorize.image.registry | toString) "" }}{{ .Values.euler_copilot.vectorize.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.vectorize.image.repository }}:{{ .Values.euler_copilot.vectorize.image.tag | toString }}"
+          imagePullPolicy: {{ if ne (.Values.euler_copilot.vectorize.image.imagePullPolicy | toString) "" }}{{ .Values.euler_copilot.vectorize.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          ports:
+            - containerPort: 8001
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health_check/ping
+              port: 8001
+              scheme: HTTP
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 90
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: HF_HOME
+              value: "/tmp"
+            - name: PROD
+              value: "enabled"
+          volumeMounts:
+            - mountPath: /vectorize-agent/config
+              name: vectorize-shared-secret-volume
+            - mountPath: /vectorize-agent/models
+              name: vectorize-models
+            - mountPath: /tmp
+              name: vectorize-tmp-volume
+          securityContext:
+            readOnlyRootFilesystem: {{ .Values.euler_copilot.vectorize.readOnly }}
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            {{- toYaml .Values.euler_copilot.vectorize.resources | nindent 12 }}
+      initContainers:
+        - name: vectorize-copy-secret
+          image: "{{ if ne ( .Values.euler_copilot.init.image.registry | toString ) "" }}{{ .Values.euler_copilot.init.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.init.image.repository }}:{{ .Values.euler_copilot.init.image.tag | toString }}"
+          restartPolicy: Always
+          imagePullPolicy: {{ if ne ( .Values.euler_copilot.init.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.init.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          env:
+            - name: CHECK_URL
+              value: "http://vectorize-agent-service-{{ .Release.Name }}.euler-copilot.svc.cluster.local:8001/health_check/ping"
+            - name: INTERVAL
+              value: "60"
+            - name: CONFIG_FILES
+              value: ".env"
+          volumeMounts:
+            - mountPath: /config
+              name: vectorize-secret-volume
+            - mountPath: /config-rw
+              name: vectorize-shared-secret-volume
+      volumes:
+        - name: vectorize-secret-volume
+          secret:
+            secretName: vectorize-secret-{{ .Release.Name }}
+            items:
+              - key: .env
+                path: .env
+        - name: vectorize-models
+          hostPath:
+            path: {{ .Values.euler_copilot.vectorize.volume.models }}
+            type: Directory
+        - name: vectorize-shared-secret-volume
+          emptyDir:
+            medium: Memory
+        - name: vectorize-tmp-volume
+          emptyDir:
+            medium: Memory
+{{- end }}

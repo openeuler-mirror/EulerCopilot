@@ -1,0 +1,12 @@
+{{- if .Values.euler_copilot.web.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+data:
+  .env: |
+    PROD=enabled
+    SERVER_NAME={{ .Values.globals.domain }}
+    FRAMEWORK_URL=http://framework-service-{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:8002/
+{{- end }}
