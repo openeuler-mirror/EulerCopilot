@@ -1,0 +1,17 @@
+{{- if .Values.euler_copilot.mysql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-db-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.euler_copilot.mysql.service.type }}
+  selector:
+    app: mysql-{{ .Release.Name }}
+  ports:
+    - port: 3306
+      targetPort: 3306
+      {{- if (and (eq .Values.euler_copilot.mysql.service.type "NodePort") .Values.euler_copilot.mysql.service.nodePort) }}
+      nodePort: {{ .Values.euler_copilot.mysql.service.nodePort }}
+      {{- end }}
+{{- end }}

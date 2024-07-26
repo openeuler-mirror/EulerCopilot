@@ -1,0 +1,239 @@
+# 全局设置
+globals:
+  # 部署实例数
+  replicaCount: 1
+  # 镜像仓库
+  imageRegistry: "swr.cn-southwest-2.myhuaweicloud.com/euler-copilot"
+  # 镜像仓库鉴权
+  imagePullSecrets:
+    - name: euler-copilot-registry
+  # 镜像拉取策略
+  imagePullPolicy: Always
+  # 部署域名
+  domain: ""   # 需要修改为域名或内网IP
+  # 大模型配置
+  llm:
+    choice: "openai"
+    # 开源大模型，OpenAI兼容接口
+    openai:
+      url: ""   # 需要根据大模型部署修改
+      key: ""   # 需要根据大模型部署修改
+      model: "Qwen1.5-32B-chat-GPTQ-Int4"   # 需要根据大模型部署修改
+      max_tokens: 8192
+    # Llama模型，用于部分功能场景
+    scheduler:
+      url: ""
+      key: ""
+
+euler_copilot:
+  # 复制配置文件用的InitContainer的设置
+  init:
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: secret_inject
+      # 镜像标签
+      tag: latest
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+  
+  # 部署Framework所需MySQL实例
+  mysql:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: mysql
+      # 镜像标签
+      tag: "8"
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+    # 性能限制设置
+    resources: {}
+    # Volume大小设置
+    persistentVolumeSize: 10Gi
+    # 密码设置
+    passwords:
+      userPassword: "8URM%HtCHQPxKe$u"
+      rootPassword: "8ZMTsY4@dgWZqoM6"
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+  
+  # 部署Framework所需Redis实例
+  redis:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: redis
+      # 镜像标签
+      tag: alpine
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 性能限制设置
+    resources: {}
+    # 容器根目录只读
+    readOnly: false
+    # 密码设置
+    redisPassword: "8FDk2rnhxVPvkSdb"
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+  
+  # 部署RAG所需PostgreSQL实例
+  pgsql:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: pgsql-empty
+      # 镜像标签
+      tag: pg16
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+    # 性能限制设置
+    resources: {}
+    # Volume大小设置
+    persistentVolumeSize: 10Gi
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+    # 密码设置
+    passwords:
+      userPassword: "123456"
+
+
+  # 部署Vectorize
+  vectorize:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: euler-copilot-vectorize-agent
+      # 镜像标签
+      tag: "20240430"
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: true
+    # 性能限制设置
+    resources: {}
+    # Volume设置
+    volume:
+      # bge模型的位置
+      models: /home/euler-copilot/models
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+    model:
+      embedding: bge-mixed-model
+      rerank: bge-reranker-large
+
+  # 部署RAG
+  rag:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: euler-copilot-rag
+      # 镜像标签
+      tag: "20240430"
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: false
+    # 性能限制设置
+    resources: {}
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+      nodePortDagster: 
+    # RAG内知识库名
+    knowledgebaseID: default_test
+    # 待向量化的文档位置
+    docs_dir: "/home/euler-copilot/docs"  # 需要修改为本地目录
+  
+  # 部署Framework
+  framework:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: euler-copilot-framework
+      # 镜像标签
+      tag: "20240430"
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: true
+    # 性能限制设置
+    resources: {}
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort:
+    # Volume设置
+    volume:
+      text2vec: /home/euler-copilot/text2vec-base-chinese-paraphrase
+      plugin_dir: 
+    # JWT Key
+    jwtKey: 6vJZbyFlfJgXFAuNlQaUdOChVLm5aLTC
+    half_keys:
+      key1: aB3cDfGhI5JkLmN7O
+      key2: pQ6rStUvWxYzA1B9C
+      key3: D4eFgHjKlMnOpQrS3
+  
+  # 部署Web
+  web:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: euler-copilot-web
+      # 镜像标签
+      tag: "20240430"
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: true
+    # 性能限制设置
+    resources: {}
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+    # Ingress设置
+    ingress:
+      # 是否启用Ingress
+      enabled: true
+      # Ingress前缀
+      prefix: /

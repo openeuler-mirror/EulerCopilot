@@ -1,0 +1,57 @@
+{{- if .Values.euler_copilot.pgsql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgsql-deploy-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: pgsql-{{ .Release.Name }}
+  annotations:
+    rollme: {{ randAlphaNum 5 | quote }}
+spec:
+  replicas: {{ .Values.globals.replicaCount }}
+  selector:
+    matchLabels:
+      app: pgsql-{{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: pgsql-{{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      imagePullSecrets:
+        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: pgsql
+          image: "{{if ne ( .Values.euler_copilot.pgsql.image.registry | toString ) ""}}{{ .Values.euler_copilot.pgsql.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.pgsql.image.repository }}:{{ .Values.euler_copilot.pgsql.image.tag | toString }}"
+          imagePullPolicy: {{ if ne ( .Values.euler_copilot.pgsql.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.pgsql.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -d postgres -U postgres
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 90
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "{{ .Values.euler_copilot.pgsql.passwords.userPassword }}"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: pgsql-data
+          resources:
+            {{- toYaml .Values.euler_copilot.pgsql.resources | nindent 12 }}
+      volumes:
+        - name: pgsql-data
+          persistentVolumeClaim:
+            claimName: pgsql-pvc-{{ .Release.Name }}
+{{- end }}

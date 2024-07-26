@@ -1,0 +1,106 @@
+{{- if .Values.euler_copilot.framework.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: framework-deploy-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: framework-{{ .Release.Name }}
+  annotations:
+    checksum/secret: {{ include (print $.Template.BasePath "/framework/framework-secret.yaml") . | sha256sum }}
+spec:
+  replicas: {{ .Values.globals.replicaCount }}
+  selector:
+    matchLabels:
+      app: framework-{{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: framework-{{ .Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1001
+      imagePullSecrets:
+        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: framework
+          image: "{{if ne ( .Values.euler_copilot.framework.image.registry | toString ) ""}}{{ .Values.euler_copilot.framework.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.framework.image.repository }}:{{ .Values.euler_copilot.framework.image.tag | toString }}"
+          imagePullPolicy: {{ if ne ( .Values.euler_copilot.framework.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.framework.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          ports:
+            - containerPort: 8002
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health_check
+              port: 8002
+              scheme: HTTP
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 90
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: PROD
+              value: "enable"
+            - name: HF_HOME
+              value: "/tmp"
+          volumeMounts:
+            - mountPath: /euler-copilot-frame/config
+              name: framework-shared-secret-volume
+            - mountPath: /model
+              name: framework-model-volume
+            - mountPath: /tmp
+              name: framework-tmp-volume
+            - mountPath: /euler-copilot-frame/apps/plugin
+              name: framework-plugins
+          securityContext:
+            readOnlyRootFilesystem: {{ .Values.euler_copilot.framework.readOnly }}
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            {{- toYaml .Values.euler_copilot.framework.resources | nindent 12 }}
+      initContainers:
+        - name: framework-copy-secret
+          image: "{{if ne ( .Values.euler_copilot.init.image.registry | toString ) ""}}{{ .Values.euler_copilot.init.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.init.image.repository }}:{{ .Values.euler_copilot.init.image.tag | toString }}"
+          restartPolicy: Always
+          imagePullPolicy: {{ if ne ( .Values.euler_copilot.init.image.imagePullPolicy | toString ) "" }}{{ .Values.euler_copilot.init.image.imagePullPolicy }}{{ else }}{{ .Values.globals.imagePullPolicy }}{{ end }}
+          env:
+            - name: CHECK_URL
+              value: http://framework-service-{{ .Release.Name }}.euler-copilot.svc.cluster.local:8002/health_check
+            - name: INTERVAL
+              value: "60"
+            - name: CONFIG_FILES
+              value: ".env"
+          volumeMounts:
+            - mountPath: /config
+              name: framework-secret-volume
+            - mountPath: /config-rw
+              name: framework-shared-secret-volume
+      volumes:
+        - name: framework-secret-volume
+          secret:
+            secretName: framework-secret-{{ .Release.Name }}
+            items:
+              - key: .env
+                path: .env
+        - name: framework-model-volume
+          hostPath:
+            path: {{ .Values.euler_copilot.framework.volume.text2vec }}
+            type: Directory
+        - name: framework-plugins
+          hostPath:
+            path: {{ .Values.euler_copilot.framework.volume.plugin_dir }}
+            type: Directory
+        - name: framework-tmp-volume
+          emptyDir:
+            medium: Memory
+        - name: framework-shared-secret-volume
+          emptyDir:
+            medium: Memory
+{{- end }}

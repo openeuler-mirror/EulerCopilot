@@ -1,0 +1,17 @@
+{{- if .Values.euler_copilot.pgsql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgsql-db-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.euler_copilot.pgsql.service.type }}
+  selector:
+    app: pgsql-{{ .Release.Name }}
+  ports:
+    - port: 5432
+      targetPort: 5432
+      {{- if (and (eq .Values.euler_copilot.pgsql.service.type "NodePort") .Values.euler_copilot.pgsql.service.nodePort) }}
+      nodePort: {{ .Values.euler_copilot.pgsql.service.nodePort }}
+      {{- end }}
+{{- end }}

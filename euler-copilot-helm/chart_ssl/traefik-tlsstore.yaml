@@ -1,0 +1,9 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: traefik-tlsstore
+  namespace: default
+
+spec:
+  defaultCertificate:
+    secretName: traefik-ssl-secret
