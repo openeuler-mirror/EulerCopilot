@@ -174,7 +174,7 @@ function check_network {
     echo -e "[Info]正在检查当前机器网络情况";
     if [[ -x $(command -v curl) ]]; then
         echo -e "\033[31m[Error]Curl不存在，将进行安装\033[0m";
-        yum install -f curl;
+        yum install -y curl;
         if [[ $? -ne 0 ]]; then
             echo -e "\033[31m[Error]Curl安装失败\033[0m";
             return 1;
