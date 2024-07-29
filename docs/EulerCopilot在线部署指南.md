@@ -36,11 +36,12 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 
 | 软件       |  版本要求                            |  说明                                |
 |------------| ------------------------------------|--------------------------------------|
-| 操作系统    | openEuler 22.03 LTS及以上版本        | 无                                   |
+| 操作系统    | openEuler 22.03 LTS及以上版本        | 目前只支持基于openEUler系统或openEuler系统，多台服务器需要安装相同OS版本     |
 | K3s        | >= v1.29.0，带有Traefik Ingress工具  | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
 | Docker     | >= v25.4.0                          | Docker提供一个独立的运行应用程序环境    |
 | Helm       | >= v3.14.4                          | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
 
+### 硬件要求
 #### 部署方案1
 
 
