@@ -57,7 +57,14 @@ function check_os_version {
         check_version $version "${supported_version[@]}";
         return $?;
     fi
-    
+    if [[ $id =~ "uos" ]]; then
+       supported_version=(
+           "20"
+       )
+       check_version $version "${supported_version[@]}";
+       return $?;
+       )
+    fi
     echo -e "\033[31m[Error]发行版不受支持，脚本将退出\033[0m";
     return 1;
 }
@@ -174,7 +181,7 @@ function check_network {
     echo -e "[Info]正在检查当前机器网络情况";
     if [[ -x $(command -v curl) ]]; then
         echo -e "\033[31m[Error]Curl不存在，将进行安装\033[0m";
-        yum install -f curl;
+        yum install -y curl;
         if [[ $? -ne 0 ]]; then
             echo -e "\033[31m[Error]Curl安装失败\033[0m";
             return 1;
