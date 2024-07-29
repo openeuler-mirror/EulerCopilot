@@ -203,9 +203,11 @@ function check_selinux {
                        return 1;
                    fi
                    return 0;
+                   ;;
 
             *) echo -e "\033[31m[Error]已终止执行，请手动关闭SELinux后重试\033[0m";
                    return 1;
+                   ;;
         esac
     fi
     
@@ -229,8 +231,10 @@ function check_firewall {
 				   fi
 				   echo -e "\033[32m[Success]FirewallD防火墙关闭成功\033[0m";
 				   return 0;
+                   ;;
 			*) echo -e "\033[31m[Error]已终止执行，请手动关闭FirewallD防火墙后重试\033[0m";
 			    return 1;
+                ;;
 		esac
 	fi
 	
