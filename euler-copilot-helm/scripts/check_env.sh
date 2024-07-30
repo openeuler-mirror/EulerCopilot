@@ -57,14 +57,14 @@ function check_os_version {
         check_version $version "${supported_version[@]}";
         return $?;
     fi
+
     if [[ $id =~ "uos" ]]; then
-       supported_version=(
-           "20"
-       )
-       check_version $version "${supported_version[@]}";
-       return $?;
-       )
-    fi
+	supported_version=(
+	    "20"
+	)
+	check_version $version "${supported_version[@]}";
+	return $?;
+    fi 
     echo -e "\033[31m[Error]发行版不受支持，脚本将退出\033[0m";
     return 1;
 }
@@ -204,17 +204,17 @@ function check_selinux {
         read -p "关闭SELinux？(Y/n)" choice;
         case $choice in 
             [yY]) sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config;
-                   setenforce 0;
-                   if [[ $? -ne 0 ]]; then
-                       echo -e "\033[31m[Error]自动关闭SELinux失败，请手动关闭后重试\033[0m";
-                       return 1;
-                   fi
-                   return 0;
-                   ;;
+                  setenforce 0;
+                  if [[ $? -ne 0 ]]; then
+                      echo -e "\033[31m[Error]自动关闭SELinux失败，请手动关闭后重试\033[0m";
+                      return 1;
+                  fi
+                  return 0;
+                  ;;
 
             *) echo -e "\033[31m[Error]已终止执行，请手动关闭SELinux后重试\033[0m";
-                   return 1;
-                   ;;
+               return 1;
+               ;;
         esac
     fi
     
@@ -231,17 +231,17 @@ function check_firewall {
 		
 		case $choice in
 			[yY]) systemctl stop firewalld;
-			       systemctl disable firewalld;
-			       if [[ $? -ne 0 ]]; then
-				       echo -e "\033[31m[Error]FirewallD防火墙自动关闭失败，请手动关闭防火墙后重试\033[0m";
-				       return 1;
-				   fi
-				   echo -e "\033[32m[Success]FirewallD防火墙关闭成功\033[0m";
-				   return 0;
-                   ;;
+			      systemctl disable firewalld;
+			      if [[ $? -ne 0 ]]; then
+				      echo -e "\033[31m[Error]FirewallD防火墙自动关闭失败，请手动关闭防火墙后重试\033[0m";
+				      return 1;
+				  fi
+				  echo -e "\033[32m[Success]FirewallD防火墙关闭成功\033[0m";
+				  return 0;
+				  ;;
 			*) echo -e "\033[31m[Error]已终止执行，请手动关闭FirewallD防火墙后重试\033[0m";
-			    return 1;
-                ;;
+			   return 1;
+			   ;;
 		esac
 	fi
 	

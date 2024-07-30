@@ -13,7 +13,6 @@ globals:
   domain: ""   # 需要修改为域名或内网IP
   # 大模型配置
   llm:
-    choice: "openai"
     # 开源大模型，OpenAI兼容接口
     openai:
       url: ""   # 需要根据大模型部署修改
@@ -21,7 +20,7 @@ globals:
       model: "Qwen1.5-32B-chat-GPTQ-Int4"   # 需要根据大模型部署修改
       max_tokens: 8192
     # Llama模型，用于部分功能场景
-    scheduler:
+    llama:
       url: ""
       key: ""
 
@@ -201,13 +200,8 @@ euler_copilot:
     # Volume设置
     volume:
       text2vec: /home/euler-copilot/text2vec-base-chinese-paraphrase
-      plugin_dir: 
     # JWT Key
     jwtKey: 6vJZbyFlfJgXFAuNlQaUdOChVLm5aLTC
-    half_keys:
-      key1: aB3cDfGhI5JkLmN7O
-      key2: pQ6rStUvWxYzA1B9C
-      key3: D4eFgHjKlMnOpQrS3
   
   # 部署Web
   web:

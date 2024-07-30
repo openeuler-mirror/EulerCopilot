@@ -52,8 +52,6 @@ spec:
               name: framework-model-volume
             - mountPath: /tmp
               name: framework-tmp-volume
-            - mountPath: /euler-copilot-frame/apps/plugin
-              name: framework-plugins
           securityContext:
             readOnlyRootFilesystem: {{ .Values.euler_copilot.framework.readOnly }}
             capabilities:
@@ -92,10 +90,6 @@ spec:
         - name: framework-model-volume
           hostPath:
             path: {{ .Values.euler_copilot.framework.volume.text2vec }}
-            type: Directory
-        - name: framework-plugins
-          hostPath:
-            path: {{ .Values.euler_copilot.framework.volume.plugin_dir }}
             type: Directory
         - name: framework-tmp-volume
           emptyDir:

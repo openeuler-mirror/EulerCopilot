@@ -85,8 +85,8 @@ function download_k3s {
 		bin_url="$GITHUB_MIRROR/https://github.com/k3s-io/k3s/releases/download/$2/$bin_name";
 		image_url="$GITHUB_MIRROR/https://github.com/k3s-io/k3s/releases/download/$2/$image_name";
 	else
-		bin_url="https://github.com/k3s-io/k3s/releases/download/$2/$bin_name";
-		image_url="https://github.com/k3s-io/k3s/releases/download/$2/$image_name";
+		bin_url="https://github.com/k3s-io/k3s/releases/download/$1/$bin_name";
+		image_url="https://github.com/k3s-io/k3s/releases/download/$1/$image_name";
 	fi
 	
 	echo -e "[Info]下载K3s";
