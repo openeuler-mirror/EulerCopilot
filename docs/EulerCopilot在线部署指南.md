@@ -35,23 +35,24 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 ### 软件要求
 
 | 软件       |  版本要求                            |  说明                                |
-|------------| ------------------------------------|--------------------------------------|
-| 操作系统    | openEuler 22.03 LTS及以上版本、InLinux 23.12版本、FusionOS 23版本、UOS 20版本 | 确保多台服务器的系统版本一致 |
+|------------| -------------------------------------|--------------------------------------|
+| 操作系统   | openEuler 22.03 LTS及以上版本、InLinux 23.12版本、FusionOS 23版本、UOS 20版本 | 确保多台服务器的系统版本一致 |
 | K3s        | >= v1.29.0，带有Traefik Ingress工具  | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
-| Docker     | >= v25.4.0                          | Docker提供一个独立的运行应用程序环境    |
-| Helm       | >= v3.14.4                          | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
+| Docker     | >= v25.4.0                           | Docker提供一个独立的运行应用程序环境    |
+| Helm       | >= v3.14.4                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
+| python     | >=3.9.9                              | python3.9.9以上版本为模型的下载和安装提供运行环境 |
 
 ### 硬件要求
 #### 部署方案1
 
 
 |  硬件要求      |         说明                                                        |
-| ------------- | --------------------------------------------------------------------|
-| 服务器        | 需要2台服务器                                                         |
-| CPU           | 鲲鹏或x86_64， >= 32 cores                                           |
-| RAM           | >= 64GB                                                             |
-| 存储          | >= 500 GB                                                           |
-| GPU/NPU       | [基于所选模型评估硬件资源需求](https://huggingface.co/spaces/hf-accelerate/model-memory-usage)|
+| -------------- | --------------------------------------------------------------------|
+| 服务器         | 需要2台服务器                                                       |
+| CPU            | 鲲鹏或x86_64， >= 32 cores                                          |
+| RAM            | >= 64GB                                                             |
+| 存储           | >= 500 GB                                                           |
+| GPU/NPU        | [基于所选模型评估硬件资源需求](https://huggingface.co/spaces/hf-accelerate/model-memory-usage)|
 
 部署视图如下图1所示
 
@@ -60,8 +61,8 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 #### 部署方案2
 
 | 硬件类型  |     说明                     |
-| -------- | ----------------------------|
-| 服务器    | 需要1台服务器                 |
+|-----------| -----------------------------|
+| 服务器    | 需要1台服务器                |
 | CPU       | 鲲鹏或x86_64， >= 32 cores   |
 | RAM       | >= 64GB                      |
 | 存储      | >= 500 GB                    |
@@ -75,12 +76,12 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 ## 环境初始化
 如果您的服务器、硬件、驱动等全部就绪，即可启动环境初始化流程。以下是详尽的操作步骤说明及执行脚本路径，请依序操作以确保初始化顺利进行。
 
-|      步骤         |           脚本路径                          |        说明                               |
-| ------------------| -------------------------------------------|------------------------------------------ |
-| 1）环境检查        | euler-copilot-helm/script/check_env.sh     | 主要对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置  |
-| 2）文件下载        | euler-copilot-helm/script/download_file.sh | 模型bge-reranker-large、bge-mixed-mode（需要单独提供）和分词工具text2vec-base-chinese-paraphrase的下载 |
-| 3）安装部署工具    | euler-copilot-helm/script/install_tools.sh | 安装helm、k3s工具                          |
-| 4）大模型准备      | 相关指令可参考本文附录部分    | 提供openai接口或按照附录部建议方式部署                      |
+|      步骤          |           脚本路径                          |        说明                               |
+|--------------------|---------------------------------------------|------------------------------------------ |
+| 1）环境检查        | euler-copilot-helm/script/check_env.sh      | 主要对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置  |
+| 2）文件下载        | euler-copilot-helm/script/download_file.sh  | 模型bge-reranker-large、bge-mixed-mode（需要单独提供）和分词工具text2vec-base-chinese-paraphrase的下载 |
+| 3）安装部署工具    | euler-copilot-helm/script/install_tools.sh  | 安装helm、k3s工具                          |
+| 4）大模型准备      | 相关指令可参考本文附录部分                  | 提供openai接口或按照附录部建议方式部署     |
 
 ## EulerCopilot安装
 
@@ -134,7 +135,7 @@ kubectl logs $(pod_id) -n euler-copilot
 5. 进入网页端进行openEuler专业知识领域的问答
 - 构建项目专属知识领域的智能问答，详细信息请查看文档《本地语料上传指南.md》
 ## 附录
-### 大模型部署
+### 大模型准备
 #### GPU环境部署模型时，可参考以下推荐方式
 ```bash
 # 1.下载模型文件：
