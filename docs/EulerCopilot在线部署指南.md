@@ -34,10 +34,10 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 
 ### 软件要求
 
-| 软件       |  版本要求                            |  说明                                |
-|------------| -------------------------------------|--------------------------------------|
-| 操作系统   | openEuler 22.03 LTS及以上版本、InLinux 23.12版本、FusionOS 23版本、UOS 20版本 | 确保多台服务器的系统版本一致 |
-| K3s        | >= v1.29.0，带有Traefik Ingress工具  | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
+| 软件        |  版本要求                             |  说明                                |
+|------------| --------------------------------------|--------------------------------------|
+| 操作系统    | openEuler 22.03 LTS及以上版本、InLinux 23.12版本、FusionOS 23版本、UOS 20版本  | 确保多台服务器的系统版本一致 |
+| K3s        | >= v1.29.0，带有Traefik Ingress工具   | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
 | Docker     | >= v25.4.0                           | Docker提供一个独立的运行应用程序环境    |
 | Helm       | >= v3.14.4                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
 | python     | >=3.9.9                              | python3.9.9以上版本为模型的下载和安装提供运行环境 |
@@ -80,27 +80,28 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 |--------------------|---------------------------------------------|------------------------------------------ |
 | 1）环境检查        | euler-copilot-helm/script/check_env.sh      | 主要对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置  |
 | 2）文件下载        | euler-copilot-helm/script/download_file.sh  | 模型bge-reranker-large、bge-mixed-mode（需要单独提供）和分词工具text2vec-base-chinese-paraphrase的下载 |
-| 3）安装部署工具    | euler-copilot-helm/script/install_tools.sh  | 安装helm、k3s工具                          |
-| 4）大模型准备      | 相关指令可参考本文附录部分                  | 提供openai接口或按照附录部建议方式部署     |
+| 3）安装部署工具    | euler-copilot-helm/script/install_tools.sh  | 安装helm、k3s工具（k3s注册登录镜像仓方式单独提供）           |
+| 4）docker检查与登录 | euler-copilot-helm/script/prepare_docker.sh | docker版本检查与升级、登录镜像仓      |
+| 5）大模型准备      | 相关指令可参考本文附录部分                  | 提供openai接口或按照附录部建议方式部署     |
 
 ## EulerCopilot安装
 
 您的环境现已就绪，接下来即可启动EulerCopilot的安装流程。请打开Euler-copilot-helm目录，该目录包含了EulerCopilot部署所需的所有文件。
 ###  1. 编辑配置文件
-请参考文件中的注释部分以获取详细内容，并根据需要进行文件内容的修改。
+请参照配置文件中的注释部分进行必要的修改。针对公网与内网不同环境下的使用需求，下面将详细阐述相应的文件修改说明。
 - 公网环境使用
   1. 在进行下一步之前，请确保您已提前申请好所需的域名，并确认公网IP地址的可访问性，以便顺利进行后续配置
-  2. 修改`euler-copilot-helm/chat/values.yaml`domain的值为公网IP或域名
+  2. 修改`euler-copilot-helm/chart/values.yaml`domain的值为公网IP或域名
 - 内网环境使用
   1. 确认内网IP和端口的可访问性，必要时添加白名单，以便顺利进行后续配置
-  2. 修改`euler-copilot-helm/chat/values.yaml`中的domain的值为内网ip
+  2. 修改`euler-copilot-helm/chart/values.yaml`中的domain的值为内网ip
   3. 按照如下方式修改相关配置文件：
 ```bash
-vim euler-copilot-helm/chat_ssl/traefik-config.yml
-# 内容如下
-ebsecure:
+vim euler-copilot-helm/chart_ssl/traefik-config.yml
+# 修改如下部分：
+websecure:
     exposedPort: port
-# 将port修改成要转发的端口
+# 将exposedPort的值port修改成要转发的端口
 kubectl apply -f traefik-config.yml
 ```
 ###  2. 安装EulerCopilot
@@ -130,10 +131,11 @@ kubectl logs $(pod_id) -n euler-copilot
 - 构建openEuler专业知识领域的智能问答
 1. 修改values.yaml的pg的镜像仓为`pg-data`
 2. 修改values.yaml的rag部分的字段`knowledgebaseID: openEuler_2bb3029f`
-3. 将`euler-copilot-helm/chat/templates/pgsql`里面pgsql-deployment.yaml的volume相关字段注释掉
-4. 进入`euler-copilot-helm/chat`，执行更新服务`helm upgrade -n $(name_space) $(服务名) .`
+3. 将`euler-copilot-helm/chart/templates/pgsql`里面pgsql-deployment.yaml的volume相关字段注释
+4. 进入`euler-copilot-helm/chart`，执行更新服务`helm upgrade -n $(name_space) $(服务名) .`
 5. 进入网页端进行openEuler专业知识领域的问答
 - 构建项目专属知识领域的智能问答，详细信息请查看文档《本地语料上传指南.md》
+
 ## 附录
 ### 大模型准备
 #### GPU环境部署模型时，可参考以下推荐方式
@@ -161,13 +163,15 @@ pip install fschat vllm
 pip install fschat[model_worker]
 python3 -m fastchat.serve.vllm_worker --model-path /root/models/Qwen1.5-14B-Chat/ --model-name qwen1.5 --num-gpus 8 --gpu-memory-utilization=0.7 --dtype=half
 # 按ctrl A+D置于后台
-# 按照如下方式改`euler-copilot-helm/chat/values`配置文件，并更新服务。
-# llm:
-#     # 开源大模型，OpenAI兼容接口
-#     openai:
-#       url: "http://$(IP):30000"
-#       key: "sk-123456"
-#       model: qwen1.5
-#       max_tokens: 8192
+# 5. 按照如下方式配置文件，并更新服务。
+vim euler-copilot-helm/chart/values.yaml
+修改如下部分
+llm:
+  # 开源大模型，OpenAI兼容接口
+  openai:
+    url: "http://$(IP):30000"
+    key: "sk-123456"
+    model: qwen1.5
+    max_tokens: 8192
 ```
 #### NPU环境部署模型待补充

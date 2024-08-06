@@ -15,9 +15,48 @@ helm upgrade -n euler-copilot 服务名称 .
 
 ## 上传语料到数据库
 进入脚本目录进行语料相关操作`cd /rag-service/scripts`
-- 初始化pg: 
-`python3 corpus_manager.pyc --method init_pg --pg_host=127.0.0.1 --pg_port=5432 --pg_user=postgres --pg_pwd=123456`
 
+```bash
+[root@master scripts]# python3 corpus_manager.py --help
+usage: corpus_manager.py [-h] --method
+                         {init_pg_info,init_rag_info,init_pg,init_corpus_asset,clear_pg,up_corpus,de                                              l_corpus,query_corpus,stop_embdding_jobs}
+                         [--pg_host PG_HOST] [--pg_port PG_PORT] [--pg_user PG_USER]
+                         [--pg_pwd PG_PWD] [--rag_host RAG_HOST] [--rag_port RAG_PORT]
+                         [--kb_name KB_NAME] [--kb_asset_name KB_ASSET_NAME]
+                         [--corpus_dir CORPUS_DIR] [--corpus_chunk CORPUS_CHUNK]
+                         [--corpus_name CORPUS_NAME] [--up_chunk UP_CHUNK]
+                         [--ssl_enable SSL_ENABLE]
+                         [--embedding_model {TEXT2VEC_BASE_CHINESE_PARAPHRASE,BGE_LARGE_ZH,BGE_MIXED                                              _MODEL}]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --method {init_pg_info,init_rag_info,init_pg,init_corpus_asset,clear_pg,up_corpus,del_corpus,query                                              _corpus,stop_embdding_jobs}
+                        脚本使用模式，有初始化数据库配置、初始化数据库、初始化语料资产、
+                        清除数据库所有内容、上传语料(当前支持txt、html、pdf、docx和md格式)、删除语料                                              、查询语 料和停止当前上传任务
+  --pg_host PG_HOST     语料库所在postres的ip
+  --pg_port PG_PORT     语料库所在postres的端口
+  --pg_user PG_USER     语料库所在postres的用户
+  --pg_pwd PG_PWD       语料库所在postres的密码
+  --rag_host RAG_HOST   rag服务的ip
+  --rag_port RAG_PORT   rag服务的port
+  --kb_name KB_NAME     资产名称
+  --kb_asset_name KB_ASSET_NAME
+                        资产库名称
+  --corpus_dir CORPUS_DIR
+                        待上传语料所在路径
+  --corpus_chunk CORPUS_CHUNK
+                        语料切割尺寸
+  --corpus_name CORPUS_NAME
+                        待查询或者待删除语料名
+  --up_chunk UP_CHUNK   语料单次上传个数
+  --ssl_enable SSL_ENABLE
+                        rag是否为https模式启动
+  --embedding_model {TEXT2VEC_BASE_CHINESE_PARAPHRASE,BGE_LARGE_ZH,BGE_MIXED_MODEL}
+                        初始化资产时决定使用的嵌入模型
+```
+相关命令如下所示：
+- 初始化pg: 
+`python3 corpus_manager.pyc -method init_pg --pg host=pgsql-db-$(服务名).euler-copilot.svc.cluster.local --pg_port=5432 --user=postgres --pg pwd=123456`       注意：此处需要修改服务名
 - 初始化资产
 `python3 corpus_manager.pyc --method init_corpus_asset `
 
