@@ -8,7 +8,7 @@ globals:
   imagePullSecrets:
     - name: euler-copilot-registry
   # 镜像拉取策略
-  imagePullPolicy: Always
+  imagePullPolicy: IfNotPresent
   # 部署域名
   domain: ""   # 需要修改为域名或内网IP
   # 大模型配置
@@ -34,7 +34,7 @@ euler_copilot:
       # 镜像名
       repository: secret_inject
       # 镜像标签
-      tag: latest
+      tag: latest           # ARM架构tag修改为arm
       # 拉取策略。留空则使用全局设置。
       imagePullPolicy: ""
   
@@ -48,7 +48,7 @@ euler_copilot:
       # 镜像名
       repository: mysql
       # 镜像标签
-      tag: "8"
+      tag: "8"      # ARM架构tag修改为8-arm
       # 拉取策略。留空则使用全局设置。
       imagePullPolicy: ""
     # 性能限制设置
@@ -75,7 +75,7 @@ euler_copilot:
       # 镜像名
       repository: redis
       # 镜像标签
-      tag: alpine
+      tag: alpine   # ARM架构tag修改alpine-arm
       # 拉取策略。留空则使用全局设置
       imagePullPolicy: ""
     # 性能限制设置
@@ -100,7 +100,7 @@ euler_copilot:
       # 镜像名
       repository: pgsql-empty
       # 镜像标签
-      tag: pg16
+      tag: pg16     # ARM架构tag修改pg16-arm
       # 拉取策略。留空则使用全局设置。
       imagePullPolicy: ""
     # 性能限制设置
@@ -127,7 +127,7 @@ euler_copilot:
       # 镜像名
       repository: euler-copilot-vectorize-agent
       # 镜像标签
-      tag: "20240430"
+      tag: "20240430"    # ARM架构tag修改20240430-arm
       # 拉取策略。留空则使用全局设置。
       imagePullPolicy: ""
     # 容器根目录只读
@@ -157,7 +157,7 @@ euler_copilot:
       # 镜像名
       repository: euler-copilot-rag
       # 镜像标签
-      tag: "20240430"
+      tag: "20240430"   # ARM架构tag修改20240430-arm
       # 拉取策略。留空则使用全局设置
       imagePullPolicy: ""
     # 容器根目录只读
@@ -185,7 +185,7 @@ euler_copilot:
       # 镜像名
       repository: euler-copilot-framework
       # 镜像标签
-      tag: "20240430"
+      tag: "20240430"     # ARM架构tag修改20240430-arm
       # 拉取策略。留空则使用全局设置
       imagePullPolicy: ""
     # 容器根目录只读
@@ -213,7 +213,7 @@ euler_copilot:
       # 镜像名
       repository: euler-copilot-web
       # 镜像标签
-      tag: "20240430"
+      tag: "20240430"    # ARM架构tag修改20240430-arm
       # 拉取策略。留空则使用全局设置
       imagePullPolicy: ""
     # 容器根目录只读

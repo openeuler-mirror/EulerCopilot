@@ -111,6 +111,28 @@ function download_k3s {
 	
 	echo -e "\033[32m[Success]K3s及其依赖下载成功\033[0m";
 	
+	mkdir -p /etc/rancher/k3s;
+	echo -e "[Info]请输入Docker私仓登录信息：";
+	read -p "私仓地址：" repo_url;
+	read -p "用户名：" repo_user;
+	read -p "密码：" repo_pass;
+	cat > /etc/rancher/k3s/registries.yaml <<-EOF
+	mirrors:
+	  "docker.io":
+	    endpoint:
+	      - "https://docker.anyhub.us.kg"
+	      - "https://docker.1panel.live"
+	      - "https://dockerhub.icu"
+	      - "https://docker.ckyl.me"
+	      - "https://docker.awsl9527.cn"
+	      - "https://dhub.kubesre.xyz"
+	configs:
+	  "$repo_url":
+	    auth:
+	      username: $repo_user
+	      password: $repo_pass
+	EOF
+
 	bash -c "curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_SKIP_DOWNLOAD=true sh -";
 	if [[ $? -ne 0 ]]; then
 		echo -e "\033[31m[Error]K3s安装失败\033[0m";
