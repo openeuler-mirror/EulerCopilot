@@ -1,6 +1,14 @@
 # 本地语料上传指南
-本地语料上传指南是用户构建项目专有语料的指导，目前语料功能支持格式docx、txt、md格式
-## 上传前准备
+本地语料上传指南是用户构建项目专属语料的指导，当前支持docx、pdf、markdown和txt文件上传，推荐使用docx上传。
+## 环境要求
+|  环境要求   |  版本要求                           |  
+|------------| ------------------------------------|
+| CPU        | >= 8 cores                          |
+| RAM        | >= 16 GB                            |
+| Disk       | >= 100GB                            |
+| Docker     | >= 24.0.0                           |
+
+## 准备工作
 1. 修改配置文件中路径
 修改euler-copilot-helm/chat/values.yaml的rag，指定待向量化的文档存放的位置：
 `docs_dir: /home/data/corpus`
@@ -13,9 +21,10 @@ helm upgrade -n euler-copilot 服务名称 .
 4. 进入到rag容器：
 `kubectl -n <namespace> exec -it <pod_id> -- bash`
 
-## 上传语料到数据库
-进入脚本目录进行语料相关操作`cd /rag-service/scripts`
-
+## 上传语料
+1. 进入脚本目录进行语料相关操作
+`cd /rag-service/scripts`
+2. 查看脚本帮助信息
 ```bash
 [root@master scripts]# python3 corpus_manager.py --help
 usage: corpus_manager.py [-h] --method
@@ -54,26 +63,29 @@ optional arguments:
   --embedding_model {TEXT2VEC_BASE_CHINESE_PARAPHRASE,BGE_LARGE_ZH,BGE_MIXED_MODEL}
                         初始化资产时决定使用的嵌入模型
 ```
-相关命令如下所示：
-- 初始化pg: 
-`python3 corpus_manager.pyc -method init_pg --pg host=pgsql-db-$(服务名).euler-copilot.svc.cluster.local --pg_port=5432 --user=postgres --pg pwd=123456`       注意：此处需要修改服务名
+3. 相关命令如下所示：
+- 初始化pg配置信息
+`python3 corpus_manager.pyc -method init_pg_info --pg host=pgsql-db-$(服务名).euler-copilot.svc.cluster.local --pg_port=5432 --user=postgres --pg pwd=123456`
+- 初始化pg
+`python3 corpus_manager.pyc -method init_pg`
 - 初始化资产
 `python3 corpus_manager.pyc --method init_corpus_asset `
-
 - 上传语料：
-`python3 corpus_manager.pyc --method up_corpus`
-
+`python3 corpus_manager.pyc --method up_corpus --up_chunk UP_CHUNK  $(语料单次上传个数)`  
+注意：语料单次上传个数默认是100，推荐单次上传200-300个
 - 查询语料: 
 `python3 corpus_manager.pyc --method query_corpus`
-
 - 删除已上传的语料
 `python3 corpus_manager.pyc --method del_corpus --corpus_name="文件名"`
-
 - 清空数据库
 `python3 corpus_manager.pyc --method clear_pg
+- 停止语料上传
+`python3 corpus_manager.pyc --method stop_embdding_jobs`
+注意：如果上传过程上时间无响应，可使用该命令停止上传`
 
 ## 端口转发
-```
+您可以根据需要进行端口转发，并在网页端查看语料上传详情。
+```bash
 kubectl port-forward <pod_id> $(主机上的端口):$(容器端口) -n euler-copilot  --address=0.0.0.0
-端口映射后可以直接用<主机IP:端口>去访问，例如如：http://192.168.16.177:3000/
 ```
+端口映射后可以直接用<主机IP:端口>去访问，例如`http://192.168.16.178:3000/`
