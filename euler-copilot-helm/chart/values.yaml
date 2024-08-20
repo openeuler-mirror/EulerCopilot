@@ -96,9 +96,9 @@ euler_copilot:
     # 镜像设置
     image:
       # 镜像仓库。留空则使用全局设置。
-      registry: ""
+      registry: "hub.oepkgs.net/neocopilot"
       # 镜像名
-      repository: pgsql-empty
+      repository: pgsql-empty  # 带语料的pg镜像名是pgsql-data
       # 镜像标签
       tag: pg16     # ARM架构tag修改pg16-arm
       # 拉取策略。留空则使用全局设置。
@@ -153,11 +153,11 @@ euler_copilot:
     # 镜像设置
     image:
       # 镜像仓库。留空则使用全局设置。
-      registry: ""
+      registry: "hub.oepkgs.net/neocopilot"
       # 镜像名
       repository: euler-copilot-rag
       # 镜像标签
-      tag: "20240430"   # ARM架构tag修改20240430-arm
+      tag: "430-release"   # ARM架构tag修改430-release-arm
       # 拉取策略。留空则使用全局设置
       imagePullPolicy: ""
     # 容器根目录只读

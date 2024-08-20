@@ -10,12 +10,13 @@ function main {
 	time=$(date -u +"%s");
 	echo -e "[Info]当前命名空间：$1，当前时间戳：$time"
 	filename="logs_$1_$time";
+	
 	mkdir $filename;
 	echo $time > $filename/timestamp;
-
+	
 	echo "[Info]开始收集日志";
 	kubectl -n $1 events > $filename/events.log;
-
+	
 	pod_names=$(kubectl -n $1 get pods -o name);
 	while IFS= read -r line || [[ -n $line ]]; do
 		mkdir -p $filename/$line;
@@ -35,4 +36,5 @@ if [[ $# -lt 2 ]]; then
 	help
 else
 	main $1 $2;
-fi	
+fi
+		
