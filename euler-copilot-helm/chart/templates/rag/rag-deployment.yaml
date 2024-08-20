@@ -74,7 +74,7 @@ spec:
             - name: INTERVAL
               value: "60"
             - name: CONFIG_FILES
-              value: ".env"
+              value: ".env;prompt_template.yaml"
           volumeMounts:
             - mountPath: /config
               name: rag-secret-volume
@@ -87,6 +87,8 @@ spec:
             items:
               - key: .env
                 path: .env
+              - key: prompt_template.yaml
+                path: prompt_template.yaml
         - name: rag-shared-secret-volume
           emptyDir:
             medium: Memory

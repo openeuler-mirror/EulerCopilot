@@ -132,7 +132,7 @@ function download_k3s {
 	      username: $repo_user
 	      password: $repo_pass
 	EOF
-
+	
 	bash -c "curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_SKIP_DOWNLOAD=true sh -";
 	if [[ $? -ne 0 ]]; then
 		echo -e "\033[31m[Error]K3s安装失败\033[0m";
