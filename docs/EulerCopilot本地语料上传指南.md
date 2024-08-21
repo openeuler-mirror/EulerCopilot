@@ -65,25 +65,28 @@ optional arguments:
 ```
 3. 相关命令如下所示：
 - 初始化pg配置信息
-`python3 corpus_manager.pyc -method init_pg_info --pg host=pgsql-db-$(服务名).euler-copilot.svc.cluster.local --pg_port=5432 --user=postgres --pg pwd=123456`
+`python3 corpus_manager.pyc --method init_pg_info --pg_host=pgsql-db-$(服务名).euler-copilot.svc.cluster.local --pg_port=5432 --pg_user=postgres --pg_pwd=123456`
 - 初始化pg
 `python3 corpus_manager.pyc -method init_pg`
 - 初始化资产
-`python3 corpus_manager.pyc --method init_corpus_asset `
-- 上传语料：
+`python3 corpus_manager.pyc --method init_corpus_asset`
+- 语料上传
 `python3 corpus_manager.pyc --method up_corpus --up_chunk UP_CHUNK  $(语料单次上传个数)`  
 注意：语料单次上传个数默认是100，推荐单次上传200-300个
-- 查询语料: 
+- 查询语料 
 `python3 corpus_manager.pyc --method query_corpus`
 - 删除已上传的语料
 `python3 corpus_manager.pyc --method del_corpus --corpus_name="文件名"`
 - 清空数据库
-`python3 corpus_manager.pyc --method clear_pg
+`python3 corpus_manager.pyc --method clear_pg`
 - 停止语料上传
 `python3 corpus_manager.pyc --method stop_embdding_jobs`
 注意：如果上传过程上时间无响应，可使用该命令停止上传`
+- 语料上传失败
+进入postgres数据库执行`update vectorization_job set status = 'FAILURE' where id in (select id from vectorization_job where status != 'SUCCESS' and status != 'FAILURE');`
+接着进入rag的pod执行`rm -rf /tmp/vector_data`
 
-## 端口转发
+## 网页端查看语料上传
 您可以根据需要进行端口转发，并在网页端查看语料上传详情。
 ```bash
 kubectl port-forward <pod_id> $(主机上的端口):$(容器端口) -n euler-copilot  --address=0.0.0.0

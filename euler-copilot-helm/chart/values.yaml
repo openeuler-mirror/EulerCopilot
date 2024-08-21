@@ -137,7 +137,7 @@ euler_copilot:
     # Volume设置
     volume:
       # bge模型的位置
-      models: /home/euler-copilot/models
+      models: /home/euler-copilot/models 
     # Service设置
     service:
       # Service类型，ClusterIP或NodePort
@@ -173,7 +173,7 @@ euler_copilot:
     # RAG内知识库名
     knowledgebaseID: default_test
     # 待向量化的文档位置
-    docs_dir: "/home/euler-copilot/docs"  # 需要修改为本地目录
+    docs_dir: "/home/euler-copilot/docs"  # 需要修改为语料文档目录
   
   # 部署Framework
   framework:
