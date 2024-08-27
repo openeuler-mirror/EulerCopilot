@@ -2,20 +2,6 @@
 ## EulerCopilot介绍
 EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作系统知识获取的便捷性，并且为OS领域模型赋能开发者及运维人员。作为获取操作系统知识，使能操作系统生产力工具(如A-ops/Atune/X2openEuler/Eulermake/EulerDevops/stratovirt/iSulad等)，颠覆传统命令交付方式，由传统命令交付方式向自然语义进化，并结合智能体任务规划能力，降低开发、使用操作系统特性的门槛。
 
-### 功能描述
-  - 通过web/shell/公众号方式，覆盖在openEuler社区/社区公众号/shell 命令行界面；
-  - 面向普通用户支持语言对话交流的方式，获取操作系统基础知识、欧拉基础知识、生成命令；
-  - 面向运维人员支持自然语义目标意图理解，自动生成工作流，基于openEuler A-OPS/ATUNE生产力工具实现启发式诊断、调优；
-  - 面向企业用户支持语义级功能特性调用，使能openEuler 主要特性(stratovirt/iSulad等)
-### 应用场景
-  - openEuler 在社区入口，通过自然语言方式，进行智能问答，包括但不限于：检索欧拉社区相关知识，案例；生成简单命令；对接社区基础设施；获取社区代办事项；构建社区流水线；构建软件包等。
-  - shell 终端用户，基于shell 命令行增强自然语言识别能力，构建启发式运维、部署等能力，包括但不限于：智能诊断、智能调优、智能部署。
-  - 端侧设备用户，通过公众号，复用社区入口能力
-### 解决痛点
-  - 随着操作系统规模剧增，当前操作系统覆盖的软件包超过3000+，整个规模达3.6万+，操作系统可调参数达13000+，依靠积累需要大量的学习成本；调优诊断依靠专家经验，10年以上专家诊断、调优效率是新员工的10倍以上；调优、诊断、部署过程需要掌握大量的命令，使用门槛较高。
-### 关键价值
-  - 通过EulerCopilot统一知识问答，知识准确率超过80%，降低重复性知识咨询问题，通过自然语言启发式运维，调优诊断部署效率倍级提升。工具通过自然语言交付，实现意图理解，生成工作流，生成命令，生成报告，生成建议，为初学者构建专家系统；
-
 ### 组件介绍
 
 | 组件                          | 端口            | 说明                  |
@@ -30,13 +16,13 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 | secret_ingect                 | 无              | 配置文件安全复制工具   |
 
 ## 环境要求
-以下部署操作必须在设备保持网络连接的状态下进行。
+以下部署操作必须在设备保持连接公网的状态下进行。
 
 ### 软件要求
 
 | 软件        |  版本要求                             |  说明                                |
 |------------| --------------------------------------|--------------------------------------|
-| 操作系统    | openEuler 22.03 LTS及以上版本、InLinux 23.12版本、FusionOS 23版本、UOS 20版本  | 确保多台服务器的系统版本一致 |
+| 操作系统    | openEuler 22.03 LTS及以上版本  | 确保多台服务器的系统版本一致 |
 | K3s        | >= v1.29.0，带有Traefik Ingress工具   | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
 | Docker     | >= v25.4.0                           | Docker提供一个独立的运行应用程序环境    |
 | Helm       | >= v3.14.4                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
@@ -46,29 +32,24 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 #### 部署方案1
 
 
-|  硬件要求      |         说明                                                        |
-| -------------- | --------------------------------------------------------------------|
-| 服务器         | 需要2台服务器                                                       |
-| CPU            | 鲲鹏或x86_64， >= 32 cores                                          |
-| RAM            | >= 64GB                                                             |
-| 存储           | >= 500 GB                                                           |
-| GPU/NPU        | [基于所选模型评估硬件资源需求](https://huggingface.co/spaces/hf-accelerate/model-memory-usage)|
-
-部署视图如下图1所示
-
-![user-flow](./pictures/EulerCopilot部署方案1.png)
+|  硬件要求       |    说明                                                              |
+| --------------  | --------------------------------------------------------------------|
+| 服务器          | 需要1台服务器，调用openai模型接口                                      |
+| CPU             | 鲲鹏或x86_64， >= 32 cores                                           |
+| RAM             | >= 64GB                                                             |
+| 存储            | >= 500 GB                                                           |
 
 #### 部署方案2
 
-| 硬件类型  |     说明                     |
+| 硬件类型   |     说明                     |
 |-----------| -----------------------------|
-| 服务器    | 需要1台服务器                |
+| 服务器     | 需要1台服务器                |
 | CPU       | 鲲鹏或x86_64， >= 32 cores   |
 | RAM       | >= 64GB                      |
 | 存储      | >= 500 GB                    |
-| GPU/NPU   | [基于所选模型评估硬件资源需求](https://huggingface.co/spaces/hf-accelerate/model-memory-usage)|
+| GPU/NPU   | GPU支持Tesla V100 32GB、Tesla A100 40GB、Tesla V100 16GB；NPU目前仅支持910ProB和910B，大模型支持qwen1.5、星火大模型 |
 
-部署视图如下图2所示
+#### 部署视图
 
 ![user-flow](./pictures/EulerCopilot部署方案2.png)
 
@@ -76,26 +57,22 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 ## 环境初始化
 如果您的服务器、硬件、驱动等全部就绪，即可启动环境初始化流程。以下是详尽的操作步骤说明及执行脚本路径，请依序操作以确保初始化顺利进行。
 
-|      步骤          |           脚本路径                          |        说明                               |
-|--------------------|---------------------------------------------|------------------------------------------ |
-| 1）环境检查        | euler-copilot-helm/script/check_env.sh      | 主要对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置  |
-| 2）文件下载        | euler-copilot-helm/script/download_file.sh  | 模型bge-reranker-large、bge-mixed-mode（需要单独提供）和分词工具text2vec-base-chinese-paraphrase的下载 |
-| 3）安装部署工具    | euler-copilot-helm/script/install_tools.sh  | 安装helm、k3s工具（k3s注册登录镜像仓方式单独提供）           |
-| 4）docker检查与登录 | euler-copilot-helm/script/prepare_docker.sh | docker版本检查与升级、登录镜像仓      |
-| 5）大模型准备      | 相关指令可参考本文附录部分                  | 提供openai接口或按照附录部建议方式部署     |
+|      序号    | 操作内容     |    相关指令        |        说明    |
+|-------------- |----------|---------------------------------------------|------------------------------------------ |
+|1| 克隆仓库      |`git clone https://gitee.com/openeuler/EulerCopilot ` | 该仓库主要是Euler-Copilot部署脚本和指南 |
+|2| 环境检查        | `bash EulerCopilot/euler-copilot-helm/scripts/check_env.sh`      | 主要对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置  |
+|3| 文件下载        | `bash EulerCopilot/euler-copilot-helm/scripts/download_file.sh`  | 模型bge-reranker-large、bge-mixed-mode（需要单独提供）和分词工具text2vec-base-chinese-paraphrase的下载 |
+|4| 安装部署工具    | `bash EulerCopilot/euler-copilot-helm/scripts/install_tools.sh v1.30.2+k3s1 v3.15.3 cn` 注意：cn的使用是使用镜像站，可以去掉不用  | 安装helm、k3s工具  |
+|5| docker检查与登录 | `bash EulerCopilot/euler-copilot-helm/scripts/prepare_docker.sh` | docker版本检查与升级、登录镜像仓      |
+|6| 大模型准备      | 提供openai接口或基于硬件部署   |   使用官网的openai接口或按照附录建议方式部署  |
 
 ## EulerCopilot安装
 
 您的环境现已就绪，接下来即可启动EulerCopilot的安装流程。请打开Euler-copilot-helm目录，该目录包含了EulerCopilot部署所需的所有文件。
 ###  1. 编辑配置文件
 请参照配置文件中的注释部分进行必要的修改。针对公网与内网不同环境下的使用需求，下面将详细阐述相应的文件修改说明。
-- 公网环境使用
-  1. 在进行下一步之前，请确保您已提前申请好所需的域名，并确认公网IP地址的可访问性，以便顺利进行后续配置
-  2. 修改`euler-copilot-helm/chart/values.yaml`domain的值为公网IP或域名
-- 内网环境使用
-  1. 确认内网IP和端口的可访问性，必要时添加白名单，以便顺利进行后续配置
-  2. 修改`euler-copilot-helm/chart/values.yaml`中的domain的值为内网ip
-  3. 按照如下方式修改相关配置文件：
+  1. 修改`vim EulerCopilot/euler-copilot-helm/chart/values.yaml`中的domain的值为服务器的ip
+  2. 按照如下方式修改相关配置文件：
 ```bash
 vim euler-copilot-helm/chart_ssl/traefik-config.yml
 # 修改如下部分：
@@ -106,8 +83,7 @@ kubectl apply -f traefik-config.yml
 ```
 ###  2. 安装EulerCopilot
 ```bash
-helm install -n euler-copilot 服务名称 .
-# 服务名称可任意指定
+helm install -n euler-copilot service .
 ```
 
 ###  3. 查看pod状态
@@ -123,9 +99,8 @@ kubectl logs $(pod_id) -n euler-copilot
 恭喜您，EulerCopilot的部署已完成！现在，您可以开启智能问答的非凡体验之旅了。
 
 #### 公网环境
-在浏览器输入https://<当前机器公网IP>:8080/或https://<域名>, 进行智能问答测试
-#### 内网环境
-网页登录验证：`https://$(内网ip）:$(port)`
+在浏览器输入`https://$(ip):$(port)`进行智能问答测试
+- 注意：这里的ip是values.yaml设置的ip, port默认值为8080
 
 ## 构建专有领域的问答
 - 构建openEuler专业知识领域的智能问答
@@ -134,7 +109,7 @@ kubectl logs $(pod_id) -n euler-copilot
 3. 将`euler-copilot-helm/chart/templates/pgsql`里面pgsql-deployment.yaml的volume相关字段注释
 4. 进入`euler-copilot-helm/chart`，执行更新服务`helm upgrade -n $(name_space) $(服务名) .`
 5. 进入网页端进行openEuler专业知识领域的问答
-- 构建项目专属知识领域的智能问答，详细信息请查看文档《本地语料上传指南.md》
+- 构建项目专属知识领域的智能问答，详细信息请查看文档《EulerCopilot本地语料上传指南.md》
 
 ## 附录
 ### 大模型准备
