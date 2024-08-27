@@ -67,7 +67,7 @@ optional arguments:
 - 初始化pg配置信息
 `python3 corpus_manager.pyc --method init_pg_info --pg_host=pgsql-db-$(服务名).euler-copilot.svc.cluster.local --pg_port=5432 --pg_user=postgres --pg_pwd=123456`
 - 初始化pg
-`python3 corpus_manager.pyc -method init_pg`
+`python3 corpus_manager.pyc --method init_pg`
 - 初始化资产
 `python3 corpus_manager.pyc --method init_corpus_asset`
 - 语料上传
