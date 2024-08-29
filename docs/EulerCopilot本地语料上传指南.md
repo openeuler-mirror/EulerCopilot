@@ -103,12 +103,12 @@ optional arguments:
 - 上传语料
 `python3 scripts/rag_kb_manager.pyc --method up_corpus --corpus_dir ./scripts/docs/ --kb_name default_test --kb_asset_name default_test_asset`
 - 删除语料
-`python3 scripts/rag_kb_manager.pyc --method del_corpus –-corpus_name abc.docx(上传的文件统一转换为docx)  --kb_name default_test --kb_asset_name default_test_asset`
+`python3 scripts/rag_kb_manager.pyc --method del_corpus --corpus_name abc.docx(上传的文件统一转换为docx)  --kb_name default_test --kb_asset_name default_test_asset`
 - 查询语料
-`python3 scripts/rag_kb_manager.pyc --method query_corpus --n corpus_ame abc.docx (ilike ‘%%’模糊查询，一行返回一个语料名以及上传时间) --kb_name default_test –-kb_asset_name default_test_asset`
+`python3 scripts/rag_kb_manager.pyc --method query_corpus --n corpus_ame abc.docx (like ‘%%’模糊查询，一行返回一个语料名以及上传时间) --kb_name default_test --kb_asset_name default_test_asset`
  
 - 语料上传失败时，停止上传任务
-`python asset_manager.py –-method stop_embdding_jobs`
+`python3 scripts/rag_kb manager.pyc  --method stop_corpus_uploading_job`
 
 ## 网页端查看语料上传
 您可以根据需要进行端口转发，并在网页端查看语料上传详情。
