@@ -9,24 +9,11 @@
 
 - 本地语料上传指南是用户构建项目专属语料的指导，当前支持docx、pdf、markdown和txt文件上传，推荐使用docx上传。
 
-
-## 环境要求
-|  环境要求   |  版本要求                           |  
-|------------| ------------------------------------|
-| CPU        | >= 8 cores                          |
-| RAM        | >= 16 GB                            |
-| Disk       | >= 100GB                            |
-| Docker     | >= 24.0.0                           |
-
 ## 准备工作
-1. 修改配置文件中路径
-修改euler-copilot-helm/chat/values.yaml的rag，指定待向量化的文档存放的位置：
-`docs_dir: /home/data/corpus`
-2. 将本地语料保存到服务器的`/home/data/corpus`目录
-3. 执行环境变量,并更新服务：
+1. 将本地语料保存到服务器的`/home/data/corpus`目录
+2. 更新EulerCopilot服务：
 ```
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-helm upgrade -n euler-copilot 服务名称 .
+helm upgrade -n euler-copilot service .
 ```
 4. 进入到rag容器：
 `kubectl -n <namespace> exec -it <pod_id> -- bash`
@@ -92,33 +79,33 @@ optional arguments:
 
 #### 步骤2：初始化数据库
 - 初始化数据库信息
- `python scripts/rag_kb_manager.pyc –-method  init_database --vector_agent_name VECTOR_AGENT_NAME  --parser_agent_name PARSER_AGENT_NAME`（注意：修改VECTOR_AGENT_NAME和PARSER_AGENT_NAME）
+ `python scripts/rag_kb_manager.pyc --method  init_database --vector_agent_name VECTOR_AGENT_NAME  --parser_agent_name PARSER_AGENT_NAME`（注意：修改VECTOR_AGENT_NAME和PARSER_AGENT_NAME）
 - 清空数据库
 `python3 scripts/rag_kb_manager.pyc --method clear_database`
 
-#### 步骤2：创建资产
+#### 步骤3：创建资产
 - 创建资产
 `python3 scripts/rag_kb_manager.pyc --method create_kb --kb_name default_test`
 - 删除资产
-`python3 scripts/rag_kb_manager.pyc –-method del_kb –-kb_name default_test`
+`python3 scripts/rag_kb_manager.pyc --method del_kb --kb_name default_test`
 - 查询资产
 `python3 scripts/rag_kb_manager.pyc --method query_kb`
  
-#### 步骤3：创建资产库
+#### 步骤4：创建资产库
 - 创建资产库
 `python3 scripts/rag_kb_manager.pyc --method create_kb_asset --kb_name default_test --kb_asset_name default_test_asset`
 - 删除资产库
-`python3 scripts/rag_kb_manager.pyc –-method del_kb_asset –-kb_name default_test –-kb_asset_name default_test_asset`
+`python3 scripts/rag_kb_manager.pyc --method del_kb_asset --kb_name default_test --kb_asset_name default_test_asset`
 - 查询资产库
 `python3 scripts/rag_kb_manager.pyc --method query_kb_asset --kb_name default_test`(注意：资产是最上层的，资产库属于资产，且不能重名)  
 
-#### 步骤4：上传语料
+#### 步骤5：上传语料
 - 上传语料
 `python3 scripts/rag_kb_manager.pyc --method up_corpus --corpus_dir ./scripts/docs/ --kb_name default_test --kb_asset_name default_test_asset`
 - 删除语料
-`python3 scripts/rag_kb_manager.pyc –-method del_corpus –- corpus_name abc.docx(上传的文件统一转换为docx)  –-kb_name default_test –-kb_asset_name default_test_asset`
+`python3 scripts/rag_kb_manager.pyc --method del_corpus –-corpus_name abc.docx(上传的文件统一转换为docx)  --kb_name default_test --kb_asset_name default_test_asset`
 - 查询语料
-`python3 scripts/rag_kb_manager.pyc –-method query_corpus –-n corpus_ame abc.docx(ilike ‘%%’模糊查询，一行返回一个语料名以及上传时间) --kb_name default_test –-kb_asset_name default_test_asset`
+`python3 scripts/rag_kb_manager.pyc --method query_corpus --n corpus_ame abc.docx (ilike ‘%%’模糊查询，一行返回一个语料名以及上传时间) --kb_name default_test –-kb_asset_name default_test_asset`
  
 - 语料上传失败时，停止上传任务
 `python asset_manager.py –-method stop_embdding_jobs`
