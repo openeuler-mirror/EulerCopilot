@@ -10,30 +10,59 @@
 - 本地语料上传指南是用户构建项目专属语料的指导，当前支持docx、pdf、markdown和txt文件上传，推荐使用docx上传。
 
 ## 准备工作
-1. 将本地语料保存到服务器的`/home/data/corpus`目录
+1. 将本地语料保存到服务器的待向量化目录（例如`/home/data/corpus`）
 2. 更新EulerCopilot服务：
-```
-helm upgrade -n euler-copilot service .
-```
-4. 进入到rag容器：
-`kubectl -n <namespace> exec -it <pod_id> -- bash`
+```bash
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# helm upgrade -n euler-copilot service .
 
-## 上传语料
-### 1. 设置PYTHONPATH
 ```
-cd rag-service/
+3. 进入到rag容器：
+```bash
+root@openeuler:~# kubectl -n euler-copilot get pods
+NAME                                          READY   STATUS    RESTARTS   AGE
+framework-deploy-service-bb5b58678-jxzqr    2/2     Running   0          16d
+mysql-deploy-service-c7857c7c9-wz9gn        1/1     Running   0          17d
+pgsql-deploy-service-86b4dc4899-ppltc       1/1     Running   0          17d
+rag-deploy-service-5b7887644c-sm58z         2/2     Running   0          110m
+redis-deploy-service-f8866b56-kj9jz         1/1     Running   0          17d
+vectorize-deploy-service-57f5f94ccf-sbhzp   2/2     Running   0          17d
+web-deploy-service-74fbf7999f-r46rg         1/1     Running   0          2d
+# 进入rag pod
+root@openeuler:~# kubectl -n euler-copilot exec -it rag-deploy-service-5b7887644c-sm58z  -- bash
+```
+4. 设置PYTHONPATH
+```bash
+[eulercopilot@rag-deploy-service-7cb85d58c7-phpng rag-service]$ ll
+total 316
+-rwxr-x---  1 eulercopilot eulercopilot   1385 Aug 30 15:18 Dockerfile-base
+-rwxr-x---  1 eulercopilot eulercopilot   2974 Aug 28 10:02 Jenkinsfile
+drwxr-x---  2 eulercopilot eulercopilot   4096 Aug 28 09:58 LICENSE
+-rwxr-x---  1 eulercopilot eulercopilot     15 Aug 28 09:58 README.md
+-rwxr-x---  1 eulercopilot eulercopilot 175488 Aug 30 14:21 base.py
+drwxr-x---  2 eulercopilot eulercopilot     80 Aug 30 15:51 config
+-rwxr-x---  1 eulercopilot eulercopilot    184 Aug 28 10:02 dagster.yaml
+-rwxr-x---  1 eulercopilot eulercopilot    203 Aug 28 09:58 dagster.yaml.example
+-rwxr-x---  1 eulercopilot eulercopilot  84242 Aug 30 15:17 default.py
+drwxr-x---  3 eulercopilot eulercopilot   4096 Aug 28 09:58 deploy
+-rwxr-x---  1 eulercopilot eulercopilot   4141 Aug 30 10:58 psycopg2_gs.py
+drwxr-x--- 15 eulercopilot eulercopilot   4096 Aug 28 10:04 rag_service
+-rwxr-x---  1 eulercopilot eulercopilot    635 Aug 28 10:02 requirements.txt
+-rwxr-x---  1 eulercopilot eulercopilot    121 Aug 28 15:38 run.sh
+drwxr-x---  1 eulercopilot eulercopilot   4096 Aug 30 15:51 scripts
+drwxr-x---  2 eulercopilot eulercopilot   4096 Aug 28 10:04 test
+-rwxr-x---  1 eulercopilot eulercopilot     50 Aug 28 09:58 workspace.yaml
 # 设置PYTHONPATH
-export PYTHONPATH=$(pwd)
+[eulercopilot@rag-deploy-service-7cb85d58c7-phpng rag-service]$ export PYTHONPATH=$(pwd)
 ```
+## 上传语料
 ### 2. 查看脚本帮助信息
-
-```bash:
-python3 scripts/rag_kb_manager.pyc --help
+```bash
+[eulercopilot@rag-deploy-service-7cb85d58c7-phpng rag-service]$ python3 scripts/rag_kb_manager.pyc --help
 usage: rag_kb_manager.pyc [-h] --method
                           {init_database_info,init_rag_info,init_database,clear_database,create_kb,del_kb,query_kb,create_kb_asset,del_kb_asset,query_kb_asset,up_corpus,del_corpus,query_corpus,stop_corpus_uploading_job}
                           [--database_url DATABASE_URL] [--vector_agent_name VECTOR_AGENT_NAME] [--parser_agent_name PARSER_AGENT_NAME]
-                          [--rag_url RAG_URL] [--kb_name KB_NAME] [--kb_asset_name KB_ASSET_NAME] [--corpus_dir CORPUS_DIR] [--corpus_chunk CORPUS_CHUNK]
-                          [--corpus_name CORPUS_NAME] [--up_chunk UP_CHUNK]
+                          [--rag_url RAG_URL] [--kb_name KB_NAME] [--kb_asset_name KB_ASSET_NAME] [--corpus_dir CORPUS_DIR]
+                          [--corpus_chunk CORPUS_CHUNK] [--corpus_name CORPUS_NAME] [--up_chunk UP_CHUNK]
                           [--embedding_model {TEXT2VEC_BASE_CHINESE_PARAPHRASE,BGE_LARGE_ZH,BGE_MIXED_MODEL}] [--vector_dim VECTOR_DIM]
                           [--num_cores NUM_CORES]
 
@@ -42,7 +71,8 @@ optional arguments:
   --method {init_database_info,init_rag_info,init_database,clear_database,create_kb,del_kb,query_kb,create_kb_asset,del_kb_asset,query_kb_asset,up_corpus,del_corpus,query_corpus,stop_corpus_uploading_job}
                         脚本使用模式，有init_database_info(初始化数据库配置)、init_database(初始化数据库)、clear_database（清除数据库）、create_kb(创建资产)、
                         del_kb(删除资产)、query_kb(查询资产)、create_kb_asset(创建资产库)、del_kb_asset(删除资产库)、query_kb_asset(查询
-                        资产库)、up_corpus(上传语料,当前支持txt、html、pdf、docx和md格式)、del_corpus(删除语料)、query_corpus(查询语料)和 stop_corpus_uploading_job(上传语料失败后，停止当前上传任务)
+                        资产库)、up_corpus(上传语料,当前支持txt、html、pdf、docx和md格式)、del_corpus(删除语料)、query_corpus(查询语料)和
+                        stop_corpus_uploading_job(上传语料失败后，停止当前上传任务)
   --database_url DATABASE_URL
                         语料资产所在数据库的url
   --vector_agent_name VECTOR_AGENT_NAME
@@ -71,7 +101,7 @@ optional arguments:
 ### 3. 具体操作：
 #### 步骤1：配置数据库和rag信息
 - 配置数据库信息
-`python3 scripts/rag_kb_manager.pyc --method init_database_info  --database_url postgresql+psycopg2://postgres:123456@pgsql-db-$(服务名):5432/postgres`
+`python3 scripts/rag_kb_manager.pyc --method init_database_info  --database_url postgresql+psycopg2://postgres:123456@pgsql-db-service:5432/postgres`
 (database_url是数据库基于sqlalchemy链接的url，请根据实际修改)
 
 - 配置rag信息
@@ -80,37 +110,48 @@ optional arguments:
 #### 步骤2：初始化数据库
 - 初始化数据库信息
  `python scripts/rag_kb_manager.pyc --method  init_database --vector_agent_name VECTOR_AGENT_NAME  --parser_agent_name PARSER_AGENT_NAME`（注意：修改VECTOR_AGENT_NAME和PARSER_AGENT_NAME）
+
 - 清空数据库
 `python3 scripts/rag_kb_manager.pyc --method clear_database`
 
 #### 步骤3：创建资产
 - 创建资产
 `python3 scripts/rag_kb_manager.pyc --method create_kb --kb_name default_test`
+
 - 删除资产
 `python3 scripts/rag_kb_manager.pyc --method del_kb --kb_name default_test`
+
 - 查询资产
 `python3 scripts/rag_kb_manager.pyc --method query_kb`
  
 #### 步骤4：创建资产库
 - 创建资产库
 `python3 scripts/rag_kb_manager.pyc --method create_kb_asset --kb_name default_test --kb_asset_name default_test_asset`
+
 - 删除资产库
 `python3 scripts/rag_kb_manager.pyc --method del_kb_asset --kb_name default_test --kb_asset_name default_test_asset`
+
 - 查询资产库
 `python3 scripts/rag_kb_manager.pyc --method query_kb_asset --kb_name default_test`(注意：资产是最上层的，资产库属于资产，且不能重名)  
 
 #### 步骤5：上传语料
 - 上传语料
 `python3 scripts/rag_kb_manager.pyc --method up_corpus --corpus_dir ./scripts/docs/ --kb_name default_test --kb_asset_name default_test_asset`
-- 删除语料
-`python3 scripts/rag_kb_manager.pyc --method del_corpus --corpus_name abc.docx(上传的文件统一转换为docx)  --kb_name default_test --kb_asset_name default_test_asset`
-- 查询语料
-`python3 scripts/rag_kb_manager.pyc --method query_corpus --n corpus_ame abc.docx (like ‘%%’模糊查询，一行返回一个语料名以及上传时间) --kb_name default_test --kb_asset_name default_test_asset`
- 
-- 语料上传失败时，停止上传任务
-`python3 scripts/rag_kb manager.pyc  --method stop_corpus_uploading_job`
 
-## 网页端查看语料上传
+- 删除语料
+`python3 scripts/rag_kb_manager.pyc --method del_corpus --corpus_name abc.docx --kb_name default_test --kb_asset_name default_test_asset`(上传的文件统一转换为docx)
+
+- 查询语料
+    - 查询指定名称的语料：
+    `python3 scripts/rag_kb_manager.pyc --method query_corpus --corpus_name 语料名.docx --kb_name default_test --kb_asset_name default_test_asset`
+    
+    - 查询所有语料：
+    `python3 scripts/rag_kb_manager.pyc --method query_corpus --corpus_name --kb_name default_test --kb_asset_name default_test_asset`
+
+- 语料上传失败时，停止上传任务
+`python3 scripts/rag_kb_manager.pyc  --method stop_corpus_uploading_job`
+
+## 网页端查看语料上传进度
 您可以根据需要进行端口转发，并在网页端查看语料上传详情。
 ```bash
 kubectl port-forward <pod_id> $(主机上的端口):$(容器端口) -n euler-copilot  --address=0.0.0.0

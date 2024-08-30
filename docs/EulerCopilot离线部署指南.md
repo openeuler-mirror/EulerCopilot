@@ -142,7 +142,7 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
   rm -rf linux-amd64
   ```
 #### 3.4 大模型准备
-提供openai接口或根据硬件型号进行大模型部署，GPU服务器可参考附录的相关指令进行部署
+提供openai接口或根据硬件型号进行大模型部署，GPU服务器可参考附录的相关指令进行部署，
 NPU910B可参考[stable-diffusionxl模型-推理指导](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/）built-in/foundation_models/stable_diffusionxl)进行部署。
 
 ## EulerCopilot安装
@@ -151,277 +151,72 @@ NPU910B可参考[stable-diffusionxl模型-推理指导](https://gitee.com/ascend
 
 ###  1. 编辑配置文件
 ```bash
-# 请打开开EulerCopilot/euler-copilot-helm仓库，该目录包含了EulerCopilot部署所需的所有文件。
-vim EulerCopilot/euler-copilot-helm/chart/values.yaml
-# 以下是values.yaml文件的全部内容，请参照配置文件中的注释部分进行必要的修改
-# 全局设置
-globals:
-  # 部署实例数
-  replicaCount: 1
-  # 镜像仓库
-  imageRegistry: "swr.cn-southwest-2.myhuaweicloud.com/euler-copilot"
-  # 镜像仓库鉴权
-  imagePullSecrets:
-    - name: euler-copilot-registry
-  # 镜像拉取策略
-  imagePullPolicy: IfNotPresent
-  # 部署域名
-  domain: ""   # 需要修改为域名或内网IP
-  # 大模型配置
-  llm:
-    # 开源大模型，OpenAI兼容接口
-    openai:
-      url: ""   # 需要根据大模型部署修改
-      key: ""   # 需要根据大模型部署修改
-      model: "Qwen1.5-32B-chat-GPTQ-Int4"   # 需要根据大模型部署修改
-      max_tokens: 8192
-    # Llama模型，用于部分功能场景
-    llama:
-      url: ""
-      key: ""
+# 进入EulerCopilot仓库目录，该目录包含文档目录和Helm安装配置文件目录
+root@openeuler:~# cd /home/EulerCopilot
+root@openeuler:/home/EulerCopilot# ll
+total 28
+drwxr-xr-x  3 root root 4096 Aug 28 17:45 docs/
+drwxr-xr-x  5 root root 4096 Aug 28 17:45 euler-copilot-helm/
 
-euler_copilot:
-  # 复制配置文件用的InitContainer的设置
-  init:
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: ""
-      # 镜像名
-      repository: secret_inject
-      # 镜像标签
-      tag: latest           # ARM架构tag修改为arm
-      # 拉取策略。留空则使用全局设置。
-      imagePullPolicy: ""
-  
-  # 部署Framework所需MySQL实例
-  mysql:
-    enabled: true
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: ""
-      # 镜像名
-      repository: mysql
-      # 镜像标签
-      tag: "8"      # ARM架构tag修改为8-arm
-      # 拉取策略。留空则使用全局设置。
-      imagePullPolicy: ""
-    # 性能限制设置
-    resources: {}
-    # Volume大小设置
-    persistentVolumeSize: 10Gi
-    # 密码设置
-    passwords:
-      userPassword: "8URM%HtCHQPxKe$u"
-      rootPassword: "8ZMTsY4@dgWZqoM6"
-    # Service设置
-    service:
-      # Service类型，ClusterIP或NodePort
-      type: ClusterIP
-      nodePort: 
-  
-  # 部署Framework所需Redis实例
-  redis:
-    enabled: true
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: ""
-      # 镜像名
-      repository: redis
-      # 镜像标签
-      tag: alpine   # ARM架构tag修改alpine-arm
-      # 拉取策略。留空则使用全局设置
-      imagePullPolicy: ""
-    # 性能限制设置
-    resources: {}
-    # 容器根目录只读
-    readOnly: false
-    # 密码设置
-    redisPassword: "8FDk2rnhxVPvkSdb"
-    # Service设置
-    service:
-      # Service类型，ClusterIP或NodePort
-      type: ClusterIP
-      nodePort: 
-  
-  # 部署RAG所需PostgreSQL实例
-  pgsql:
-    enabled: true
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: "hub.oepkgs.net/neocopilot"
-      # 镜像名
-      repository: pgsql-empty  # 带语料的pg镜像名是pgsql-data
-      # 镜像标签
-      tag: pg16     # ARM架构tag修改pg16-arm
-      # 拉取策略。留空则使用全局设置。
-      imagePullPolicy: ""
-    # 性能限制设置
-    resources: {}
-    # Volume大小设置
-    persistentVolumeSize: 10Gi
-    # Service设置
-    service:
-      # Service类型，ClusterIP或NodePort
-      type: ClusterIP
-      nodePort: 
-    # 密码设置
-    passwords:
-      userPassword: "123456"
+# 进入Helm配置文件目录
+root@openeuler:/home/EulerCopilot# cd euler-copilot-helm/chart
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# ll
+total 28
+-rw-r--r--  1 root root  135 Aug 28 17:45 Chart.yaml
+drwxr-xr-x 10 root root 4096 Aug 28 17:55 templates/
+-rw-r--r--  1 root root 6572 Aug 30 12:05 values.yaml
 
+# 编辑values.yaml配置文件
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# vim values.yaml
+# 注意事项：  
+# - 修改domain为服务器的实际IP地址。  
+# - 更新OpenAI的URL、Key、Model和Max Token为部署所需的值。  
+# - 根据实际部署情况，更新vectorize、rag、framework中的BGE模型路径、文档向量化和分词工具路径。  
 
-  # 部署Vectorize
-  vectorize:
-    enabled: true
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: ""
-      # 镜像名
-      repository: euler-copilot-vectorize-agent
-      # 镜像标签
-      tag: "20240430"    # ARM架构tag修改20240430-arm
-      # 拉取策略。留空则使用全局设置。
-      imagePullPolicy: ""
-    # 容器根目录只读
-    readOnly: true
-    # 性能限制设置
-    resources: {}
-    # Volume设置
-    volume:
-      # bge模型的位置
-      models: /home/euler-copilot/models 
-    # Service设置
-    service:
-      # Service类型，ClusterIP或NodePort
-      type: ClusterIP
-      nodePort: 
-    model:
-      embedding: bge-mixed-model
-      rerank: bge-reranker-large
+# - 如需在内网环境中修改Traefik配置以转发端口，请继续下一步。 
+# 进入SSL配置目录，准备修改Traefik配置
+root@openeuler:/home/EulerCopilot/euler-copilot-helm# cd chart_ssl/
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl# ll
+total 20
+-rw-r--r-- 1 root root  250 Aug 28 17:45 traefik-config.yml
+-rw-r--r-- 1 root root  212 Aug 28 17:45 traefik-secret.yaml
+-rw-r--r-- 1 root root  175 Aug 28 17:45 traefik-tlsstore.yaml
+# 修改traefik-config.yml以转发HTTPS端口（如果需要）
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# vim traefik-config.yml
+# 修改部分示例：  
+# websecure:  
+#   exposedPort: 8080  # 将此处的端口号修改为期望转发的HTTPS端口  
 
-  # 部署RAG
-  rag:
-    enabled: true
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: "hub.oepkgs.net/neocopilot"
-      # 镜像名
-      repository: euler-copilot-rag
-      # 镜像标签
-      tag: "430-release"   # ARM架构tag修改430-release-arm
-      # 拉取策略。留空则使用全局设置
-      imagePullPolicy: ""
-    # 容器根目录只读
-    readOnly: false
-    # 性能限制设置
-    resources: {}
-    # Service设置
-    service:
-      # Service类型，ClusterIP或NodePort
-      type: ClusterIP
-      nodePort: 
-      nodePortDagster: 
-    # RAG内知识库名
-    knowledgebaseID: default_test
-    # 待向量化的文档位置
-    docs_dir: "/home/euler-copilot/docs"  # 需要修改为语料文档目录
-  
-  # 部署Framework
-  framework:
-    enabled: true
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: ""
-      # 镜像名
-      repository: euler-copilot-framework
-      # 镜像标签
-      tag: "20240430"     # ARM架构tag修改20240430-arm
-      # 拉取策略。留空则使用全局设置
-      imagePullPolicy: ""
-    # 容器根目录只读
-    readOnly: true
-    # 性能限制设置
-    resources: {}
-    # Service设置
-    service:
-      # Service类型，ClusterIP或NodePort
-      type: ClusterIP
-      nodePort:
-    # Volume设置
-    volume:
-      text2vec: /home/euler-copilot/text2vec-base-chinese-paraphrase
-    # JWT Key
-    jwtKey: 6vJZbyFlfJgXFAuNlQaUdOChVLm5aLTC
-  
-  # 部署Web
-  web:
-    enabled: true
-    # 镜像设置
-    image:
-      # 镜像仓库。留空则使用全局设置。
-      registry: ""
-      # 镜像名
-      repository: euler-copilot-web
-      # 镜像标签
-      tag: "20240430"    # ARM架构tag修改20240430-arm
-      # 拉取策略。留空则使用全局设置
-      imagePullPolicy: ""
-    # 容器根目录只读
-    readOnly: true
-    # 性能限制设置
-    resources: {}
-    # Service设置
-    service:
-      # Service类型，ClusterIP或NodePort
-      type: ClusterIP
-      nodePort: 
-    # Ingress设置
-    ingress:
-      # 是否启用Ingress
-      enabled: true
-      # Ingress前缀
-      prefix: /
-```
-
-1. 修改`vim EulerCopilot/euler-copilot-helm/chart/values.yaml`domain为服务器的host_ip。
-2. 修改openai的url、key、model、max_token为实际部署的值。
-3. 将values.yaml中指定的章节（vectorize、rag、framework）中bge模型、带向量化的文档及分词工具的位置更新为服务器上文件的实际路径。
-4. 内网下可按照如下方式修改traefik-config.yml，将默认的web端口8080进行转发：
-```bash
-vim euler-copilot-helm/chart_ssl/traefik-config.yml
-# 修改如下部分：
-websecure:
-    exposedPort: port
-# 将exposedPort的值port修改成要转发的端口
-kubectl apply -f traefik-config.yml
+# 应用修改后的Traefik配置  
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# kubectl apply -f traefik-config.yml
 ```
 ###  2. 安装EulerCopilot
 ```bash
-helm install -n euler-copilot service .
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# cd ../chart
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# helm install -n euler-copilot service .
 ```
 
 ###  3. 查看pod状态
 ```bash
-kubectl -n euler-copilot get pods
+# 镜像拉取过程可能需要大约一分钟的时间，请耐心等待。
+# 部署成功后，所有Pod的状态应显示为Running。
 root@openeuler:~# kubectl -n euler-copilot get pods
 NAME                                          READY   STATUS    RESTARTS   AGE
-framework-deploy-opengauss-bb5b58678-jxzqr    2/2     Running   0          16d
-mysql-deploy-opengauss-c7857c7c9-wz9gn        1/1     Running   0          17d
-pgsql-deploy-opengauss-86b4dc4899-ppltc       1/1     Running   0          17d
-rag-deploy-opengauss-5b7887644c-sm58z         2/2     Running   0          110m
-redis-deploy-opengauss-f8866b56-kj9jz         1/1     Running   0          17d
-vectorize-deploy-opengauss-57f5f94ccf-sbhzp   2/2     Running   0          17d
-web-deploy-opengauss-74fbf7999f-r46rg         1/1     Running   0          2d
-# 注意：镜像拉取需要等待一分钟左右，若Pod状态均为Running，则部署成功。
-# 若Pod运行出现失败情况，检查EulerCopilot的日志以确保服务正在正常运行。。
-kubectl -n euler-copilot get events
-kubectl logs $(pod_name) -n euler-copilot 
+framework-deploy-service-bb5b58678-jxzqr    2/2     Running   0          16d
+mysql-deploy-service-c7857c7c9-wz9gn        1/1     Running   0          17d
+pgsql-deploy-service-86b4dc4899-ppltc       1/1     Running   0          17d
+rag-deploy-service-5b7887644c-sm58z         2/2     Running   0          110m
+redis-deploy-service-f8866b56-kj9jz         1/1     Running   0          17d
+vectorize-deploy-service-57f5f94ccf-sbhzp   2/2     Running   0          17d
+web-deploy-service-74fbf7999f-r46rg         1/1     Running   0          2d
+root@openeuler:~# kubectl -n euler-copilot get events
+root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot 
+# 注意事项：
+# 如果Pod状态出现失败，建议按照以下步骤进行排查：
+# 检查EulerCopilot的Pod日志，以确定是否有错误信息或异常行为。
+# 验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
+# 查看相关的服务(Service)和部署(Deployment)配置，确保所有配置均正确无误。
+# 如果问题依然存在，可以考虑查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息。
 ```
 ## 验证安装
 
@@ -431,15 +226,15 @@ kubectl logs $(pod_name) -n euler-copilot
 ``` bash
 # 首次登录触发mysql数据库生成user表
 # 1.生成加密后的账号密码
-[root@op2203-01 model]# python3
-Python 3.9.9 (main, Mar 15 2022, 00:00:00) 
-[GCC 10.3.1] on linux
+root@openeuler:~# python3
+Python 3.10.12 (main, Mar 22 2024, 16:50:05) [GCC 11.4.0] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import hashlib
 >>> hashlib.sha256("密码".encode('utf-8')).hexdigest()
-# 保存生成的加密密码
+'f1db188c86b9f7cf154922a525891b807a6df8a44ad0fbace0cfe5840081a507'
+# 保存生成加密后的密码
 # 2.插入账号密码到mysql数据库
-kubectl -n $(namespace) exec -it $(pod_name) -- bash
+root@openeuler:~# kubectl -n euler-copilot exec -it mysql-deploy-service-c7857c7c9-wz9gn -- bash
 bash-5.1# mysql -uroot -p8ZMTsY4@dgWZqoM6
 # 密码在EulerCopilot/euler-copilot-helm/chart/values.yaml的myslq章节查看
 mysql> use euler_copilot;
@@ -452,14 +247,14 @@ mysql> exit;
 
 ![EulerCopilot界面.png](./pictures/EulerCopilot界面.png)
 
-## 构建专有领域的问答
-### 构建openEuler专业知识领域的智能问答
+## 构建专有领域智能问答
+### 1. 构建openEuler专业知识领域的智能问答
   1. 修改values.yaml的pg的镜像仓为`pg-data`
   2. 修改values.yaml的rag部分的字段`knowledgebaseID: openEuler_2bb3029f`
   3. 将`vim EulerCopilot/euler-copilot-helm/chart/templates/pgsql/pgsql-deployment.yaml`的volume相关字段注释
   4. 进入`cd EulerCopilot/euler-copilot-helm/chart`，执行更新服务`helm upgrade -n euler-copilot server .`
   5. 进入网页端进行openEuler专业知识领域的问答
-### 构建项目专属知识领域智能问答
+### 2. 构建项目专属知识领域智能问答
 详细信息请参考文档《EulerCopilot本地语料上传指南.md》
 
 ## 附录
