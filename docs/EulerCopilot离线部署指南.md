@@ -13,7 +13,7 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 | mysql                         | 3306 (内部端口) | MySQL数据库           |
 | redis                         | 6379 (内部端口) | Redis数据库           |
 | postgres                      | 5432 (内部端口) | 向量数据库             |
-| secret_ingect                 | 无              | 配置文件安全复制工具   |
+| secret_inject                 | 无              | 配置文件安全复制工具   |
 
 ## 环境要求
 ### 软件要求
@@ -236,7 +236,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 # 2.插入账号密码到mysql数据库
 root@openeuler:~# kubectl -n euler-copilot exec -it mysql-deploy-service-c7857c7c9-wz9gn -- bash
 bash-5.1# mysql -uroot -p8ZMTsY4@dgWZqoM6
-# 密码在EulerCopilot/euler-copilot-helm/chart/values.yaml的myslq章节查看
+# 密码在EulerCopilot/euler-copilot-helm/chart/values.yaml的mysql章节查看
 mysql> use euler_copilot;
 mysql> insert into user(user_sub, passwd) values ("用户名", "加密后的密码");
 mysql> exit;
