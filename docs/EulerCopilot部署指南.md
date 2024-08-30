@@ -15,9 +15,7 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 | postgres                      | 5432 (内部端口) | 向量数据库             |
 | secret_ingect                 | 无              | 配置文件安全复制工具   |
 
-## 环境准备
-以下部署操作必须在设备保持连接公网的状态下进行, 确保服务器能够访问其需要的外部服务, 并确保系统满足EulerCopilot的最低硬件和软件要求。
-
+## 环境要求
 ### 软件要求
 
 | 类型        |  版本要求                         |  说明                                |
@@ -38,15 +36,19 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 | GPU           | Tesla V100 16GB，4张         |
 | NPU           | 910ProB、910B                |
 
-注意： 若无GPU或NPU资源，建议通过调用openai接口的方式来实现功能。(接口样例：https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions)
+注意： 
+1. 若无GPU或NPU资源，建议通过调用openai接口的方式来实现功能。(接口样例：https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions)
+2. 调用openai接口的方式不需要安装高版本的docker(>= v25.4.0)、python(>=3.9.9)
 
-#### 部署视图
+### 部署视图
 ![EulerCopilot部署图](./pictures/EulerCopilot部署视图.png)
+
 ## 获取EulerCopilot
 - 从EulerCopilot的官方Git仓库[EulerCopilot](https://gitee.com/openeuler/EulerCopilot)下载最新的部署仓库
 - 如果您正在使用Kubernetes，则不需要安装k3s工具。
-## 环境初始化
-如果您的服务器、硬件、驱动等全部就绪，即可启动环境初始化流程。以下是详尽的操作步骤说明及执行脚本路径，请依序操作以确保初始化顺利进行。
+
+## 环境准备
+设备需联网并符合EulerCopilot的最低软硬件要求。确认服务器、硬件、驱动等准备就绪后，即可开始环境准备工作。请按提供的操作步骤和脚本路径依次执行，以确保初始化成功。
 
 |      序号    | 操作内容     |    相关指令        |        说明    |
 |-------------- |----------|---------------------------------------------|------------------------------------------ |
@@ -58,11 +60,11 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 
 ## EulerCopilot安装
 
-您的环境现已就绪，接下来即可启动EulerCopilot的安装流程。请打开Euler-copilot-helm目录，该目录包含了EulerCopilot部署所需的所有文件。
+您的环境现已就绪，接下来即可启动EulerCopilot的安装流程。
 
 ###  1. 编辑配置文件
 ```bash
-# 请打开EulerCopilot仓库
+# 请打开开EulerCopilot/euler-copilot-helm仓库，该目录包含了EulerCopilot部署所需的所有文件。
 vim EulerCopilot/euler-copilot-helm/chart/values.yaml
 # 以下是values.yaml文件的全部内容，请参照配置文件中的注释部分进行必要的修改
 # 全局设置
@@ -182,7 +184,6 @@ euler_copilot:
     # 密码设置
     passwords:
       userPassword: "123456"
-
 
   # 部署Vectorize
   vectorize:
@@ -320,25 +321,59 @@ helm install -n euler-copilot service .
 ###  3. 查看pod状态
 ```bash
 kubectl -n euler-copilot get pods
+root@openeuler:~# kubectl -n euler-copilot get pods
+NAME                                          READY   STATUS    RESTARTS   AGE
+framework-deploy-opengauss-bb5b58678-jxzqr    2/2     Running   0          16d
+mysql-deploy-opengauss-c7857c7c9-wz9gn        1/1     Running   0          17d
+pgsql-deploy-opengauss-86b4dc4899-ppltc       1/1     Running   0          17d
+rag-deploy-opengauss-5b7887644c-sm58z         2/2     Running   0          110m
+redis-deploy-opengauss-f8866b56-kj9jz         1/1     Running   0          17d
+vectorize-deploy-opengauss-57f5f94ccf-sbhzp   2/2     Running   0          17d
+web-deploy-opengauss-74fbf7999f-r46rg         1/1     Running   0          2d
 # 注意：镜像拉取需要等待一分钟左右，若Pod状态均为Running，则部署成功。
-# 若Pod运行出现失败情况，建议首先检查部署日志及Pod日志，以便快速定位并解决问题。
+# 若Pod运行出现失败情况，检查EulerCopilot的日志以确保服务正在正常运行。。
 kubectl -n euler-copilot get events
-kubectl logs $(pod_id) -n euler-copilot 
+kubectl logs $(pod_name) -n euler-copilot 
 ```
+
 ## 验证安装
+
+访问EulerCopilot Web界面，请在浏览器中输入https://$(host_ip):8080（其中port默认值为8080，若更改则需相应调整）。
+
+### 1. 创建登录账号密码
+``` bash
+# 首次登录触发mysql数据库生成user表
+# 1.生成加密后的账号密码
+[root@op2203-01 model]# python3
+Python 3.9.9 (main, Mar 15 2022, 00:00:00) 
+[GCC 10.3.1] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import hashlib
+>>> hashlib.sha256("密码".encode('utf-8')).hexdigest()
+# 保存生成的加密密码
+# 2.插入账号密码到mysql数据库
+kubectl -n $(namespace) exec -it $(pod_name) -- bash
+bash-5.1# mysql -uroot -p8ZMTsY4@dgWZqoM6
+# 密码在EulerCopilot/euler-copilot-helm/chart/values.yaml的myslq章节查看
+mysql> use euler_copilot;
+mysql> insert into user(user_sub, passwd) values ("用户名", "加密后的密码");
+mysql> exit;
+```
+### 2. 问答验证
+
 恭喜您，EulerCopilot的部署已完成！现在，您可以开启智能问答的非凡体验之旅了。
-- 检查EulerCopilot的日志以确保服务正在正常运行。
-- 通过浏览器访问EulerCopilot的Web界面，在浏览器输入`https://$(host_ip):$(port)`，进行智能问答测试
-注意：port默认值为8080
+
+![EulerCopilot界面.png](./pictures/EulerCopilot界面.png)
 
 ## 构建专有领域的问答
-- 构建openEuler专业知识领域的智能问答
+### 构建openEuler专业知识领域的智能问答
   1. 修改values.yaml的pg的镜像仓为`pg-data`
   2. 修改values.yaml的rag部分的字段`knowledgebaseID: openEuler_2bb3029f`
   3. 将`vim EulerCopilot/euler-copilot-helm/chart/templates/pgsql/pgsql-deployment.yaml`的volume相关字段注释
   4. 进入`cd EulerCopilot/euler-copilot-helm/chart`，执行更新服务`helm upgrade -n euler-copilot server .`
   5. 进入网页端进行openEuler专业知识领域的问答
-- 构建项目专属知识领域的智能问答，详细信息请参考文档《EulerCopilot本地语料上传指南.md》
+### 构建项目专属知识领域智能问答
+详细信息请参考文档《EulerCopilot本地语料上传指南.md》
 
 ## 附录
 ### 大模型准备

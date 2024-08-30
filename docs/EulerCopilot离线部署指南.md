@@ -2,20 +2,6 @@
 ## EulerCopilot介绍
 EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作系统知识获取的便捷性，并且为OS领域模型赋能开发者及运维人员。作为获取操作系统知识，使能操作系统生产力工具(如A-ops/Atune/X2openEuler/Eulermake/EulerDevops/stratovirt/iSulad等)，颠覆传统命令交付方式，由传统命令交付方式向自然语义进化，并结合智能体任务规划能力，降低开发、使用操作系统特性的门槛。
 
-### 功能描述
-  - 通过web/shell/公众号方式，覆盖在openEuler社区/社区公众号/shell 命令行界面；
-  - 面向普通用户支持语言对话交流的方式，获取操作系统基础知识、欧拉基础知识、生成命令；
-  - 面向运维人员支持自然语义目标意图理解，自动生成工作流，基于openEuler A-OPS/ATUNE生产力工具实现启发式诊断、调优；
-  - 面向企业用户支持语义级功能特性调用，使能openEuler 主要特性(stratovirt/iSulad等)
-### 应用场景
-  - openEuler 在社区入口，通过自然语言方式，进行智能问答，包括但不限于：检索欧拉社区相关知识，案例；生成简单命令；对接社区基础设施；获取社区代办事项；构建社区流水线；构建软件包等。
-  - shell 终端用户，基于shell 命令行增强自然语言识别能力，构建启发式运维、部署等能力，包括但不限于：智能诊断、智能调优、智能部署。
-  - 端侧设备用户，通过公众号，复用社区入口能力
-### 解决痛点
-  - 随着操作系统规模剧增，当前操作系统覆盖的软件包超过3000+，整个规模达3.6万+，操作系统可调参数达13000+，依靠积累需要大量的学习成本；调优诊断依靠专家经验，10年以上专家诊断、调优效率是新员工的10倍以上；调优、诊断、部署过程需要掌握大量的命令，使用门槛较高。
-### 关键价值
-  - 通过EulerCopilot统一知识问答，知识准确率超过80%，降低重复性知识咨询问题，通过自然语言启发式运维，调优诊断部署效率倍级提升。工具通过自然语言交付，实现意图理解，生成工作流，生成命令，生成报告，生成建议，为初学者构建专家系统；
-
 ### 组件介绍
 
 | 组件                          | 端口            | 说明                  |
@@ -30,47 +16,38 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 | secret_ingect                 | 无              | 配置文件安全复制工具   |
 
 ## 环境要求
-以下部署操作在环境无公网的情况下进行。
-
 ### 软件要求
 
-| 软件        |  版本要求                             |  说明                                |
-|------------| --------------------------------------|--------------------------------------|
-| 操作系统    | openEuler 22.03 LTS及以上版本、InLinux 23.12版本、FusionOS 23版本、UOS 20版本  | 确保多台服务器的系统版本一致 |
+| 类型        |  版本要求                         |  说明                                |
+|------------| -------------------------------------|--------------------------------------|
+| 操作系统    | openEuler 22.03 LTS及以上版本         | 无                                   |
 | K3s        | >= v1.29.0，带有Traefik Ingress工具   | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
 | Docker     | >= v25.4.0                           | Docker提供一个独立的运行应用程序环境    |
 | Helm       | >= v3.14.4                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
 | python     | >=3.9.9                              | python3.9.9以上版本为模型的下载和安装提供运行环境 |
+ 
 
 ### 硬件要求
-#### 部署方案1
 
+| 类型           |     硬件要求                  | 
+|----------------| -----------------------------|
+| 服务器         | 1台                           |
+| CPU           | 鲲鹏或x86_64，>= 32 cores     |
+| RAM           | >= 64GB                      |
+| 存储          | >= 500 GB                    |
+| GPU           | Tesla V100 16GB，4张         |
+| NPU           | 910ProB、910B                |
 
-|  硬件要求      |         说明                                                        |
-| -------------- | --------------------------------------------------------------------|
-| 服务器         | 需要2台服务器                                                       |
-| CPU            | 鲲鹏或x86_64， >= 32 cores                                          |
-| RAM            | >= 64GB                                                             |
-| 存储           | >= 500 GB                                                           |
-| GPU/NPU        | [基于所选模型评估硬件资源需求](https://huggingface.co/spaces/hf-accelerate/model-memory-usage)|
+注意： 
+1. 若无GPU或NPU资源，建议通过调用openai接口的方式来实现功能。(接口样例：https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions)
+2. 调用openai接口的方式不需要安装高版本的docker(>= v25.4.0)、python(>=3.9.9)
 
-部署视图如下图1所示
+### 部署视图
+![EulerCopilot部署图](./pictures/EulerCopilot部署视图.png)
 
-![user-flow](./pictures/EulerCopilot部署方案1.png)
-
-#### 部署方案2
-
-| 硬件类型  |     说明                     |
-|-----------| -----------------------------|
-| 服务器    | 需要1台服务器                |
-| CPU       | 鲲鹏或x86_64， >= 32 cores   |
-| RAM       | >= 64GB                      |
-| 存储      | >= 500 GB                    |
-| GPU/NPU   | [基于所选模型评估硬件资源需求](https://huggingface.co/spaces/hf-accelerate/model-memory-usage)|
-
-部署视图如下图2所示
-
-![user-flow](./pictures/EulerCopilot部署方案2.png)
+## 获取EulerCopilot
+- 从EulerCopilot的官方Git仓库[EulerCopilot](https://gitee.com/openeuler/EulerCopilot)下载最新的部署仓库
+- 如果您正在使用Kubernetes，则不需要安装k3s工具。
 
 ## 环境准备
 如果您的服务器、硬件、驱动等全部就绪，即可启动环境初始化流程，以下部署步骤在无公网环境执行。
@@ -79,104 +56,343 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 环境检查主要是对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置。
 - 主机名设置
 在Shell中运行如下命令：
-```bash
-cat /etc/hostname
-echo "主机名" > /etc/hostname
-```
-- 系统DNS设置
-  - 您需要给当前主机设置有效的DNS
+  ```bash
+  cat /etc/hostname
+  echo "主机名" > /etc/hostname
+  ```
+- 系统DNS设置：需要给当前主机设置有效的DNS
 - 防火墙设置
-```bash
-# 查看防火墙状态
-systemctl status firewalld
-# 查看防火墙列表
-firewall-cmd --list-all
-# 关闭防火墙
-systemctl stop firewalld
-systemctl disable firewalld
-```
+  ```bash
+  # 查看防火墙状态
+  systemctl status firewalld
+  # 查看防火墙列表
+  firewall-cmd --list-all
+  # 关闭防火墙
+  systemctl stop firewalld
+  systemctl disable firewalld
+  ```
 - SELinux设置
-```bash
-# 需要关闭selinux，可以临时关闭或永久关闭
-# 永久关闭SELinux
-sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-# 临时关闭
-setenforce 0
-```
+  ```bash
+  # 需要关闭selinux，可以临时关闭或永久关闭
+  # 永久关闭SELinux
+  sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+  # 临时关闭
+  setenforce 0
+  ```
 ### 2. 文件下载
 - 模型文件下载
-    - 需要下载模型文件bge-reranker-large、bge-mixed-mode和分词工具text2vec-base-chinese-paraphrase
-    - 下载链接：[https://www.alipan.com/t/bmncTBnPRGxqCYjYS2Pn]
+  - 需要下载模型文件bge-reranker-large、bge-mixed-model和分词工具text2vec-base-chinese-paraphrase
+  - bge-mixed-model下载链接：[https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/bge-mixed-model.rar]
+  - bge-reranker-large下载链接: [https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/bge-reranker-large.rar]
+  - text2vec-base-chinese-paraphrase下载链接：[https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/text2vec-base-chinese-paraphrase.rar]
 - 镜像包下载
-    - 镜像下载地址：[https://www.alipan.com/t/hlng5lj6NjVLRgNNL0mO]
-- 获取安装配置库
-```bash
-git clone https://gitee.com/openeuler/EulerCopilot/tree/master/euler-copilot-helm.git
-```
+  - arm架构或x86架构的EulerCopilot服务的各组件镜像下载地址单独提供
+
 ### 3. 安装部署工具
 #### 3.1 安装docker
-检查docker版本是否满足>= v25.4.0 ，如不满足，请升级docker版本
+如需要基于GPU/NPU部署大模型，需要检查docker版本是否满足>= v25.4.0 ，如不满足，请升级docker版本
 
 #### 3.2 安装K3s并导入镜像
 - 安装SELinux配置文件
-```bash
-yum install -y container-selinux selinux-policy-base
-# packages里有k3s-selinux-0.1.1-rc1.el7.noarch.rpm的离线包
-rpm -i https://rpm.rancher.io/k3s-selinux-0.1.1-rc1.el7.noarch.rpm
-```
+  ```bash
+  yum install -y container-selinux selinux-policy-base
+  # packages里有k3s-selinux-0.1.1-rc1.el7.noarch.rpm的离线包
+  rpm -i https://rpm.rancher.io/k3s-selinux-0.1.1-rc1.el7.noarch.rpm
+  ```
 - x86架构安装k3s
-```bash
-# 在有网络的环境上获取k3s相关包，以v1.30.3+k3s1示例
-wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s
-wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-airgap-images-amd64.tar.zst
-cp k3s /usr/local/bin/
-cd /var/lib/rancher/k3s/agent
-mkdir images
-cp k3s-airgap-images-arm64.tar.zst /var/lib/rancher/k3s/agent/images
-# packages里有k3s-install.sh的离线包
-curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh 
-INSTALL_K3S_SKIP_DOWNLOAD=true ./k3s-install.sh
-```
+  ```bash
+  # 在有网络的环境上获取k3s相关包，以v1.30.3+k3s1示例
+  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s
+  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-airgap-images-amd64.tar.zst 
+  cp k3s /usr/local/bin/
+  cd /var/lib/rancher/k3s/agent
+  mkdir images
+  cp k3s-airgap-images-arm64.tar.zst /var/lib/rancher/k3s/agent/images
+  # packages里有k3s-install.sh的离线包
+  curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh 
+  INSTALL_K3S_SKIP_DOWNLOAD=true ./k3s-install.sh
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+  ```
 - arm架构安装k3s
-```bash
-# 在有网络的环境上获取k3s相关包，以v1.30.3+k3s1示例
-wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-arm64
-wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-airgap-images-arm64.tar.zst
-cp k3s-arm64 /usr/local/bin/k3s
-cd /var/lib/rancher/k3s/agent
-mkdir images
-cp k3s-airgap-images-arm64.tar.zst /var/lib/rancher/k3s/agent/images
-# packages里有k3s-install.sh的离线包
-curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh 
-INSTALL_K3S_SKIP_DOWNLOAD=true ./k3s-install.sh
-```
+  ```bash
+  # 在有网络的环境上获取k3s相关包，以v1.30.3+k3s1示例
+  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-arm64
+  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-airgap-images-arm64.tar.zst
+  cp k3s-arm64 /usr/local/bin/k3s
+  cd /var/lib/rancher/k3s/agent
+  mkdir images
+  cp k3s-airgap-images-arm64.tar.zst /var/lib/rancher/k3s/agent/images
+  # packages里有k3s-install.sh的离线包
+  curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh 
+  INSTALL_K3S_SKIP_DOWNLOAD=true ./k3s-install.sh
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+  ```
 - 导入镜像
-```bash
-# 导入已下载的镜像文件
-k3s ctr image import $(镜像文件)
-```
+  ```bash
+  # 导入已下载的镜像文件
+  k3s ctr image import $(镜像文件)
+  ```
 
 #### 3.3 安装Helm工具
 以当前的最新版本“3.15.0”、x86_64架构为例，运行如下命令：
-```bash
-wget https://get.helm.sh/helm-v3.15.0-linux-amd64.tar.gz
-tar -xzf helm-v3.15.0-linux-amd64.tar.gz
-mv linux-amd64/helm /usr/sbin
-rm -rf linux-amd64
-```
+  ```bash
+  wget https://get.helm.sh/helm-v3.15.0-linux-amd64.tar.gz
+  tar -xzf helm-v3.15.0-linux-amd64.tar.gz
+  mv linux-amd64/helm /usr/sbin
+  rm -rf linux-amd64
+  ```
 #### 3.4 大模型准备
 提供openai接口或根据硬件型号进行大模型部署，GPU服务器可参考附录的相关指令进行部署
+NPU910B可参考[stable-diffusionxl模型-推理指导](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/）built-in/foundation_models/stable_diffusionxl)进行部署。
 
 ## EulerCopilot安装
 
-您的环境现已就绪，接下来即可启动EulerCopilot的安装流程。请打开euler-copilot-helm目录，该目录包含了EulerCopilot部署所需的所有文件。
+您的环境现已就绪，接下来即可启动EulerCopilot的安装流程。
 
 ###  1. 编辑配置文件
-请参照配置文件中的注释部分进行必要的修改，下面将对内网环境详细阐述修改说明。
-- 内网环境使用
-  1. 确认内网IP和端口的可访问性，必要时添加白名单，以便顺利进行后续配置
-  2. 修改`euler-copilot-helm/chart/values.yaml`中的domain的值为内网ip
-  3. 按照如下方式修改相关配置文件：
+```bash
+# 请打开开EulerCopilot/euler-copilot-helm仓库，该目录包含了EulerCopilot部署所需的所有文件。
+vim EulerCopilot/euler-copilot-helm/chart/values.yaml
+# 以下是values.yaml文件的全部内容，请参照配置文件中的注释部分进行必要的修改
+# 全局设置
+globals:
+  # 部署实例数
+  replicaCount: 1
+  # 镜像仓库
+  imageRegistry: "swr.cn-southwest-2.myhuaweicloud.com/euler-copilot"
+  # 镜像仓库鉴权
+  imagePullSecrets:
+    - name: euler-copilot-registry
+  # 镜像拉取策略
+  imagePullPolicy: IfNotPresent
+  # 部署域名
+  domain: ""   # 需要修改为域名或内网IP
+  # 大模型配置
+  llm:
+    # 开源大模型，OpenAI兼容接口
+    openai:
+      url: ""   # 需要根据大模型部署修改
+      key: ""   # 需要根据大模型部署修改
+      model: "Qwen1.5-32B-chat-GPTQ-Int4"   # 需要根据大模型部署修改
+      max_tokens: 8192
+    # Llama模型，用于部分功能场景
+    llama:
+      url: ""
+      key: ""
+
+euler_copilot:
+  # 复制配置文件用的InitContainer的设置
+  init:
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: secret_inject
+      # 镜像标签
+      tag: latest           # ARM架构tag修改为arm
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+  
+  # 部署Framework所需MySQL实例
+  mysql:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: mysql
+      # 镜像标签
+      tag: "8"      # ARM架构tag修改为8-arm
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+    # 性能限制设置
+    resources: {}
+    # Volume大小设置
+    persistentVolumeSize: 10Gi
+    # 密码设置
+    passwords:
+      userPassword: "8URM%HtCHQPxKe$u"
+      rootPassword: "8ZMTsY4@dgWZqoM6"
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+  
+  # 部署Framework所需Redis实例
+  redis:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: redis
+      # 镜像标签
+      tag: alpine   # ARM架构tag修改alpine-arm
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 性能限制设置
+    resources: {}
+    # 容器根目录只读
+    readOnly: false
+    # 密码设置
+    redisPassword: "8FDk2rnhxVPvkSdb"
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+  
+  # 部署RAG所需PostgreSQL实例
+  pgsql:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: "hub.oepkgs.net/neocopilot"
+      # 镜像名
+      repository: pgsql-empty  # 带语料的pg镜像名是pgsql-data
+      # 镜像标签
+      tag: pg16     # ARM架构tag修改pg16-arm
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+    # 性能限制设置
+    resources: {}
+    # Volume大小设置
+    persistentVolumeSize: 10Gi
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+    # 密码设置
+    passwords:
+      userPassword: "123456"
+
+
+  # 部署Vectorize
+  vectorize:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: euler-copilot-vectorize-agent
+      # 镜像标签
+      tag: "20240430"    # ARM架构tag修改20240430-arm
+      # 拉取策略。留空则使用全局设置。
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: true
+    # 性能限制设置
+    resources: {}
+    # Volume设置
+    volume:
+      # bge模型的位置
+      models: /home/euler-copilot/models 
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+    model:
+      embedding: bge-mixed-model
+      rerank: bge-reranker-large
+
+  # 部署RAG
+  rag:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: "hub.oepkgs.net/neocopilot"
+      # 镜像名
+      repository: euler-copilot-rag
+      # 镜像标签
+      tag: "430-release"   # ARM架构tag修改430-release-arm
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: false
+    # 性能限制设置
+    resources: {}
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+      nodePortDagster: 
+    # RAG内知识库名
+    knowledgebaseID: default_test
+    # 待向量化的文档位置
+    docs_dir: "/home/euler-copilot/docs"  # 需要修改为语料文档目录
+  
+  # 部署Framework
+  framework:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: euler-copilot-framework
+      # 镜像标签
+      tag: "20240430"     # ARM架构tag修改20240430-arm
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: true
+    # 性能限制设置
+    resources: {}
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort:
+    # Volume设置
+    volume:
+      text2vec: /home/euler-copilot/text2vec-base-chinese-paraphrase
+    # JWT Key
+    jwtKey: 6vJZbyFlfJgXFAuNlQaUdOChVLm5aLTC
+  
+  # 部署Web
+  web:
+    enabled: true
+    # 镜像设置
+    image:
+      # 镜像仓库。留空则使用全局设置。
+      registry: ""
+      # 镜像名
+      repository: euler-copilot-web
+      # 镜像标签
+      tag: "20240430"    # ARM架构tag修改20240430-arm
+      # 拉取策略。留空则使用全局设置
+      imagePullPolicy: ""
+    # 容器根目录只读
+    readOnly: true
+    # 性能限制设置
+    resources: {}
+    # Service设置
+    service:
+      # Service类型，ClusterIP或NodePort
+      type: ClusterIP
+      nodePort: 
+    # Ingress设置
+    ingress:
+      # 是否启用Ingress
+      enabled: true
+      # Ingress前缀
+      prefix: /
+```
+
+1. 修改`vim EulerCopilot/euler-copilot-helm/chart/values.yaml`domain为服务器的host_ip。
+2. 修改openai的url、key、model、max_token为实际部署的值。
+3. 将values.yaml中指定的章节（vectorize、rag、framework）中bge模型、带向量化的文档及分词工具的位置更新为服务器上文件的实际路径。
+4. 内网下可按照如下方式修改traefik-config.yml，将默认的web端口8080进行转发：
 ```bash
 vim euler-copilot-helm/chart_ssl/traefik-config.yml
 # 修改如下部分：
@@ -185,34 +401,67 @@ websecure:
 # 将exposedPort的值port修改成要转发的端口
 kubectl apply -f traefik-config.yml
 ```
-注意：模型文件（bge-reranker-large、bge-mixed-mode和分词工具text2vec-base-chinese-paraphrase）的挂载路径需要修改正确。
 ###  2. 安装EulerCopilot
 ```bash
-helm install -n euler-copilot 服务名称 .
-# 服务名称可任意指定
+helm install -n euler-copilot service .
 ```
+
 ###  3. 查看pod状态
 ```bash
 kubectl -n euler-copilot get pods
+root@openeuler:~# kubectl -n euler-copilot get pods
+NAME                                          READY   STATUS    RESTARTS   AGE
+framework-deploy-opengauss-bb5b58678-jxzqr    2/2     Running   0          16d
+mysql-deploy-opengauss-c7857c7c9-wz9gn        1/1     Running   0          17d
+pgsql-deploy-opengauss-86b4dc4899-ppltc       1/1     Running   0          17d
+rag-deploy-opengauss-5b7887644c-sm58z         2/2     Running   0          110m
+redis-deploy-opengauss-f8866b56-kj9jz         1/1     Running   0          17d
+vectorize-deploy-opengauss-57f5f94ccf-sbhzp   2/2     Running   0          17d
+web-deploy-opengauss-74fbf7999f-r46rg         1/1     Running   0          2d
 # 注意：镜像拉取需要等待一分钟左右，若Pod状态均为Running，则部署成功。
-# 若Pod运行出现失败情况，建议首先检查部署日志及Pod日志，以便快速定位并解决问题。
+# 若Pod运行出现失败情况，检查EulerCopilot的日志以确保服务正在正常运行。。
 kubectl -n euler-copilot get events
-kubectl logs $(pod_id) -n euler-copilot 
+kubectl logs $(pod_name) -n euler-copilot 
 ```
-## 测试
+## 验证安装
+
+访问EulerCopilot Web界面，请在浏览器中输入https://$(host_ip):8080（其中port默认值为8080，若更改则需相应调整）。
+
+### 1. 创建登录账号密码
+``` bash
+# 首次登录触发mysql数据库生成user表
+# 1.生成加密后的账号密码
+[root@op2203-01 model]# python3
+Python 3.9.9 (main, Mar 15 2022, 00:00:00) 
+[GCC 10.3.1] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import hashlib
+>>> hashlib.sha256("密码".encode('utf-8')).hexdigest()
+# 保存生成的加密密码
+# 2.插入账号密码到mysql数据库
+kubectl -n $(namespace) exec -it $(pod_name) -- bash
+bash-5.1# mysql -uroot -p8ZMTsY4@dgWZqoM6
+# 密码在EulerCopilot/euler-copilot-helm/chart/values.yaml的myslq章节查看
+mysql> use euler_copilot;
+mysql> insert into user(user_sub, passwd) values ("用户名", "加密后的密码");
+mysql> exit;
+```
+### 2. 问答验证
 
 恭喜您，EulerCopilot的部署已完成！现在，您可以开启智能问答的非凡体验之旅了。
-- 内网环境
-网页登录验证：`https://$(内网ip）:$(port)`
+
+![EulerCopilot界面.png](./pictures/EulerCopilot界面.png)
 
 ## 构建专有领域的问答
-- 构建openEuler专业知识领域的智能问答
-1. 修改values.yaml的pg的镜像仓为`pg-data`
-2. 修改values.yaml的rag部分的字段`knowledgebaseID: openEuler_2bb3029f`
-3. 将`euler-copilot-helm/chart/templates/pgsql`里面pgsql-deployment.yaml的volume相关字段注释
-4. 进入`euler-copilot-helm/chart`，执行更新服务`helm upgrade -n $(name_space) $(服务名) .`
-5. 进入网页端进行openEuler专业知识领域的问答
-- 构建项目专属知识领域的智能问答，详细信息请查看文档《EulerCopilot本地语料上传指南.md》
+### 构建openEuler专业知识领域的智能问答
+  1. 修改values.yaml的pg的镜像仓为`pg-data`
+  2. 修改values.yaml的rag部分的字段`knowledgebaseID: openEuler_2bb3029f`
+  3. 将`vim EulerCopilot/euler-copilot-helm/chart/templates/pgsql/pgsql-deployment.yaml`的volume相关字段注释
+  4. 进入`cd EulerCopilot/euler-copilot-helm/chart`，执行更新服务`helm upgrade -n euler-copilot server .`
+  5. 进入网页端进行openEuler专业知识领域的问答
+### 构建项目专属知识领域智能问答
+详细信息请参考文档《EulerCopilot本地语料上传指南.md》
+
 ## 附录
 ### 大模型准备
 #### GPU环境部署模型时，可参考以下推荐方式
