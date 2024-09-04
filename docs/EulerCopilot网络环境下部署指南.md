@@ -1,4 +1,4 @@
-# EulerCopilot离线部署指南
+# EulerCopilot部署指南
 ## EulerCopilot介绍
 EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作系统知识获取的便捷性，并且为OS领域模型赋能开发者及运维人员。作为获取操作系统知识，使能操作系统生产力工具(如A-ops/Atune/X2openEuler/EulerMaker/EulerDevops/stratovirt/iSulad等)，颠覆传统命令交付方式，由传统命令交付方式向自然语义进化，并结合智能体任务规划能力，降低开发、使用操作系统特性的门槛。
 
@@ -26,9 +26,7 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 | Helm       | >= v3.14.4                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
 | python     | >=3.9.9                              | python3.9.9以上版本为模型的下载和安装提供运行环境 |
  
-
 ### 硬件要求
-
 | 类型           |     硬件要求                  | 
 |----------------| -----------------------------|
 | 服务器         | 1台                           |
@@ -50,100 +48,15 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 - 如果您正在使用Kubernetes，则不需要安装k3s工具。
 
 ## 环境准备
-如果您的服务器、硬件、驱动等全部就绪，即可启动环境初始化流程，以下部署步骤在无公网环境执行。
+设备需联网并符合EulerCopilot的最低软硬件要求。确认服务器、硬件、驱动等准备就绪后，即可开始环境准备工作。请按提供的操作步骤和脚本路径依次执行，以确保初始化成功。
 
-### 1. 环境检查
-环境检查主要是对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置。
-- 主机名设置
-在Shell中运行如下命令：
-  ```bash
-  cat /etc/hostname
-  echo "主机名" > /etc/hostname
-  ```
-- 系统DNS设置：需要给当前主机设置有效的DNS
-- 防火墙设置
-  ```bash
-  # 查看防火墙状态
-  systemctl status firewalld
-  # 查看防火墙列表
-  firewall-cmd --list-all
-  # 关闭防火墙
-  systemctl stop firewalld
-  systemctl disable firewalld
-  ```
-- SELinux设置
-  ```bash
-  # 需要关闭selinux，可以临时关闭或永久关闭
-  # 永久关闭SELinux
-  sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-  # 临时关闭
-  setenforce 0
-  ```
-### 2. 文件下载
-- 模型文件下载
-  - 需要下载模型文件bge-reranker-large、bge-mixed-model和分词工具text2vec-base-chinese-paraphrase
-  - bge-mixed-model下载链接：[https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/bge-mixed-model.rar]
-  - bge-reranker-large下载链接: [https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/bge-reranker-large.rar]
-  - text2vec-base-chinese-paraphrase下载链接：[https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/text2vec-base-chinese-paraphrase.rar]
-- 镜像包下载
-  - arm架构或x86架构的EulerCopilot服务的各组件镜像下载地址单独提供
-
-### 3. 安装部署工具
-#### 3.1 安装docker
-如需要基于GPU/NPU部署大模型，需要检查docker版本是否满足>= v25.4.0 ，如不满足，请升级docker版本
-
-#### 3.2 安装K3s并导入镜像
-- 安装SELinux配置文件
-  ```bash
-  yum install -y container-selinux selinux-policy-base
-  # packages里有k3s-selinux-0.1.1-rc1.el7.noarch.rpm的离线包
-  rpm -i https://rpm.rancher.io/k3s-selinux-0.1.1-rc1.el7.noarch.rpm
-  ```
-- x86架构安装k3s
-  ```bash
-  # 在有网络的环境上获取k3s相关包，以v1.30.3+k3s1示例
-  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s
-  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-airgap-images-amd64.tar.zst 
-  cp k3s /usr/local/bin/
-  cd /var/lib/rancher/k3s/agent
-  mkdir images
-  cp k3s-airgap-images-arm64.tar.zst /var/lib/rancher/k3s/agent/images
-  # packages里有k3s-install.sh的离线包
-  curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh 
-  INSTALL_K3S_SKIP_DOWNLOAD=true ./k3s-install.sh
-  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-  ```
-- arm架构安装k3s
-  ```bash
-  # 在有网络的环境上获取k3s相关包，以v1.30.3+k3s1示例
-  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-arm64
-  wget https://github.com/k3s-io/k3s/releases/download/v1.30.3%2Bk3s1/k3s-airgap-images-arm64.tar.zst
-  cp k3s-arm64 /usr/local/bin/k3s
-  cd /var/lib/rancher/k3s/agent
-  mkdir images
-  cp k3s-airgap-images-arm64.tar.zst /var/lib/rancher/k3s/agent/images
-  # packages里有k3s-install.sh的离线包
-  curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh 
-  INSTALL_K3S_SKIP_DOWNLOAD=true ./k3s-install.sh
-  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-  ```
-- 导入镜像
-  ```bash
-  # 导入已下载的镜像文件
-  k3s ctr image import $(镜像文件)
-  ```
-
-#### 3.3 安装Helm工具
-以当前的最新版本“3.15.0”、x86_64架构为例，运行如下命令：
-  ```bash
-  wget https://get.helm.sh/helm-v3.15.0-linux-amd64.tar.gz
-  tar -xzf helm-v3.15.0-linux-amd64.tar.gz
-  mv linux-amd64/helm /usr/sbin
-  rm -rf linux-amd64
-  ```
-#### 3.4 大模型准备
-提供openai接口或根据硬件型号进行大模型部署，GPU服务器可参考附录的相关指令进行部署，
-NPU910B可参考[stable-diffusionxl模型-推理指导](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/）built-in/foundation_models/stable_diffusionxl)进行部署。
+|      序号    | 操作内容     |    相关指令        |        说明    |
+|-------------- |----------|---------------------------------------------|------------------------------------------ |
+|1| 环境检查        | `bash EulerCopilot/euler-copilot-helm/scripts/check_env.sh`      | 主要对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置  |
+|2| 文件下载        | `bash EulerCopilot/euler-copilot-helm/scripts/download_file.sh`  | 模型bge-reranker-large、bge-mixed-mode（需要单独提供）和分词工具text2vec-base-chinese-paraphrase的下载 |
+|3| 安装部署工具    | `bash EulerCopilot/euler-copilot-helm/scripts/install_tools.sh v1.30.2+k3s1 v3.15.3 cn` 注意：cn的使用是使用镜像站，可以去掉不用  | 安装helm、k3s工具  |
+|4| docker检查与登录 | `bash EulerCopilot/euler-copilot-helm/scripts/prepare_docker.sh` | docker版本检查与升级、登录镜像仓      |
+|5| 大模型准备      | 提供openai接口或基于硬件部署   |   使用官网的openai接口或按照附录建议方式部署  |
 
 ## EulerCopilot安装
 
@@ -190,9 +103,11 @@ root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# vim traefik-con
 # 应用修改后的Traefik配置  
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# kubectl apply -f traefik-config.yml
 ```
+
 ###  2. 安装EulerCopilot
 ```bash
-root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# cd ../chart
+root@openeuler:~# cd /home/EulerCopilot/euler-copilot-helm/chart
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# kubectl create namespace euler-copilot
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# helm install -n euler-copilot service .
 ```
 
@@ -218,6 +133,7 @@ root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copi
 # 查看相关的服务(Service)和部署(Deployment)配置，确保所有配置均正确无误。
 # 如果问题依然存在，可以考虑查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息。
 ```
+
 ## 验证安装
 
 访问EulerCopilot Web界面，请在浏览器中输入https://$(host_ip):8080（其中port默认值为8080，若更改则需相应调整）。
