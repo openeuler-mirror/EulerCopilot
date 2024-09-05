@@ -194,6 +194,7 @@ root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# kubectl apply -
 ```bash
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# cd ../chart
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# kubectl create namespace -n euler-copilot
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# helm install -n euler-copilot service .
 ```
 
@@ -211,14 +212,29 @@ redis-deploy-service-f8866b56-kj9jz         1/1     Running   0          17d
 vectorize-deploy-service-57f5f94ccf-sbhzp   2/2     Running   0          17d
 web-deploy-service-74fbf7999f-r46rg         1/1     Running   0          2d
 root@openeuler:~# kubectl -n euler-copilot get events
-root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot 
+root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot
+# 进入到pg数据库，执行扩展命令
+root@openeuler:~# kubectl -n euler-copilot exec -it pgsql-deploy-service-86b4dc4899-ppltc -- bash
+root@pgsql-deploy-b4cc79794-qn8zd:/tmp# psql -U postgres -d postgres
+psql (16.2 (Debian 16.2-1.pgdg120+2))
+输入 "help" 来获取帮助信息.
+postgres=# CREATE EXTENSION zhparser;
+CREATE EXTENSION
+postgres=# CREATE EXTENSION vector;
+postgres=# postgres=CREATE TEXT SEARCH CONFIGURATION zhparser (PARSER = zhparser);
+postgres=# ALTER TEXT SEARCH CONFIGURATION zhparser ADD MAPPING FOR n,v,a,i,e,l WITH simple;
+postgres=# exit
+root@pgsql-deploy-b4cc79794-qn8zd:/tmp# exit
+exit
+
 # 注意事项：
 # 如果Pod状态出现失败，建议按照以下步骤进行排查：
-# 检查EulerCopilot的Pod日志，以确定是否有错误信息或异常行为。
-# 验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
-# 查看相关的服务(Service)和部署(Deployment)配置，确保所有配置均正确无误。
-# 如果问题依然存在，可以考虑查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息。
+# 1. 检查EulerCopilot的 rag的Pod日志，以确定是否有错误信息或异常行为。
+# 2. 验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
+# 3. 查看相关的服务(Service)和部署(Deployment)配置，确保所有配置均正确无误。
+# 4. 如果问题依然存在，可以考虑查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息。
 ```
+
 ## 验证安装
 
 访问EulerCopilot Web界面，请在浏览器中输入https://$(host_ip):8080（其中port默认值为8080，若更改则需相应调整）。
@@ -256,11 +272,12 @@ mysql> exit;
   4. 进入`cd EulerCopilot/euler-copilot-helm/chart`，执行更新服务`helm upgrade -n euler-copilot server .`
   5. 进入网页端进行openEuler专业知识领域的问答
 ### 2. 构建项目专属知识领域智能问答
-详细信息请参考文档《EulerCopilot本地语料上传指南.md》
+详细信息请参考文档 [EulerCopilot本地语料上传指南](https://gitee.com/openeuler/EulerCopilot/blob/master/docs/EulerCopilot%E6%9C%AC%E5%9C%B0%E8%AF%AD%E6%96%99%E4%B8%8A%E4%BC%A0%E6%8C%87%E5%8D%97.md)
 
 ## 附录
 ### 大模型准备
-#### GPU环境部署模型时，可参考以下推荐方式
+#### GPU环境
+参考以下方式进行部署
 ```bash
 # 1.下载模型文件：
 huggingface-cli download --resume-download Qwen/Qwen1.5-14B-Chat --local-dir Qwen1.5-14B-Chat
@@ -296,4 +313,46 @@ llm:
     model: qwen1.5
     max_tokens: 8192
 ```
-#### NPU环境部署模型待补充
+#### NPU环境
+待补充
+
+## FAQ
+### 1. huggingface使用报错？
+```bash
+File "/usr/lib/python3.9/site-packages/urllib3/connection.py", line 186, in _new_conn
+raise NewConnectionError(
+urllib3.exceptions.eanconectionError: <urlib3.comnection.Hipscomnection object at exfblab6490>: Failed to establish a new conmection: [Errno 101] Network is unreachable
+```
+- 解决办法
+```bash
+pip3 install -U huggingface_hub
+export HF_ENDPOINT=https://hf-mirror.com
+```
+### 2. 如何在rag容器中调用获取问答结果的接口？
+```bash
+# 请先进入到RAG pod
+curl  -k -X POST "http://localhost:8005/kb/get_answer"  -H "Content-Type: application/json"  -d '{
+      "question": "",
+      "kb_sn": "default_test",
+      "fetch_source": true  }'
+```
+### 3. 执行helm upgrade报错
+```bash
+Error: INSTALLATI0N FAILED: Kuberetes cluster unreachable: Get "http:/localhost:880/version": dial tcp [:1:8089: conect: conection refused
+```
+- 解决办法
+```bash
+export KUBECONFIG=/etc/rancher/k3s/k3s.yam
+```
+### 4. 无法查看pod的log？
+```bash
+[root@localhost euler-copilot]# kubectl logs rag-deployservice65c75c48d8-44vcp-n euler-copilotDefaulted container "rag" out of: rag.rag-copy secret (init)Error from server: Get "https://172.21.31.11:10250/containerlogs/euler copilot/rag deploy"service 65c75c48d8-44vcp/rag": Forbidden
+```
+- 解决办法
+```bash
+# 如果设置了代理，需要将本机的网络IP从代理中剔除
+[root@localhost agent]#  cat /etc/systemd/system/k3s.service.env
+http_proxy="http://172.21.60.51:3128"
+https_proxy="http://172.21.60.51:3128"
+no_proxy=172.21.31.10 # 代理中剔除本机IP
+```
