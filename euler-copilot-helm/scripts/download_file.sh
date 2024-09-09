@@ -33,7 +33,7 @@ function check_huggingface {
 
 function download_small_model {
     RERANKER="BAAI/bge-reranker-large";
-    EMBEDDING="bge-mixed-model.tar.gz";
+    text2vec="shibing624/text2vec-base-chinese-paraphrase";
 
     export HF_ENDPOINT=https://hf-mirror.com;
     # 下载reranker
@@ -42,14 +42,14 @@ function download_small_model {
         echo -e "[Error]下载模型权重失败：$RERANKER \033[0m";
         return 1;
     fi
-    # 解压embedding
-    tar -xzf $EMBEDDING;
-    if [[ $? -ne 0 ]]; then
-        echo -e "[Error]解压模型权重失败：$EMBEDDING \033[0m";
+    # 下载分词工具text2vec-base-chinese-paraphrase
+    huggingface-cli download --resume-download $text2vec --local-dir $(echo $RERANKER | cut -d "/" -f 2);
+        if [[ $? -ne 0 ]]; then
+        echo -e "[Error]下载分词工具失败：$RERANKER \033[0m";
         return 1;
     fi
-    rm -f $EMBEDDING;
-    echo -e "\033[32m[Success]Reranker与Embedding模型配置成功\033[0m";
+    rm -f $EMBEDDING $text2vec;
+    echo -e "\033[32m[Success]Reranker模型配置和分词工具下载成功\033[0m";
     return 0;
 }
 
