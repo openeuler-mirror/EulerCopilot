@@ -221,7 +221,7 @@ psql (16.2 (Debian 16.2-1.pgdg120+2))
 postgres=# CREATE EXTENSION zhparser;
 CREATE EXTENSION
 postgres=# CREATE EXTENSION vector;
-postgres=# postgres=CREATE TEXT SEARCH CONFIGURATION zhparser (PARSER = zhparser);
+postgres=# CREATE TEXT SEARCH CONFIGURATION zhparser (PARSER = zhparser);
 postgres=# ALTER TEXT SEARCH CONFIGURATION zhparser ADD MAPPING FOR n,v,a,i,e,l WITH simple;
 postgres=# exit
 root@pgsql-deploy-b4cc79794-qn8zd:/tmp# exit
@@ -342,7 +342,7 @@ Error: INSTALLATI0N FAILED: Kuberetes cluster unreachable: Get "http:/localhost:
 ```
 - 解决办法
 ```bash
-export KUBECONFIG=/etc/rancher/k3s/k3s.yam
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 ```
 ### 4. 无法查看pod的log？
 ```bash
