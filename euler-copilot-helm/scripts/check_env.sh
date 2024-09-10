@@ -65,6 +65,14 @@ function check_os_version {
         check_version $version "${supported_version[@]}"
         return $?;
     fi
+
+    if [[ $id =~ "HopeOS" ]]; then
+        supported_version=(
+            "V22"
+        )
+        check_version $version "${supported_version[@]}"
+        return $?;
+    fi
     
     echo -e "\033[31m[Error]发行版不受支持，脚本将退出\033[0m";
     return 1;
