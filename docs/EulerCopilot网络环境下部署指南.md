@@ -22,7 +22,6 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 |------------| -------------------------------------|--------------------------------------|
 | 操作系统    | openEuler 22.03 LTS及以上版本         | 无                                   |
 | K3s        | >= v1.29.0，带有Traefik Ingress工具   | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
-| Docker     | >= v25.4.0                           | Docker提供一个独立的运行应用程序环境    |
 | Helm       | >= v3.14.4                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
 | python     | >=3.9.9                              | python3.9.9以上版本为模型的下载和安装提供运行环境 |
  
@@ -38,7 +37,7 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 
 注意： 
 1. 若无GPU或NPU资源，建议通过调用openai接口的方式来实现功能。(接口样例：https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions) 参考链接[API-KEY的获取与配置](https://help.aliyun.com/zh/dashscope/developer-reference/acquisition-and-configuration-of-api-key?spm=a2c4g.11186623.0.0.30e7694eaaxxGa))
-2. 调用openai接口的方式不需要安装高版本的docker(>= v25.4.0)、python(>=3.9.9)
+2. 调用第三方openai接口的方式不需要安装高版本的python(>=3.9.9)
 
 ### 部署视图
 ![EulerCopilot部署图](./pictures/EulerCopilot部署视图.png)
@@ -56,7 +55,7 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 |2| 文件下载        | `bash EulerCopilot/euler-copilot-helm/scripts/download_file.sh`  | 模型bge-reranker-large、bge-mixed-mode（需要单独提供）和分词工具text2vec-base-chinese-paraphrase的下载 |
 |3| 安装部署工具    | `bash EulerCopilot/euler-copilot-helm/scripts/install_tools.sh v1.30.2+k3s1 v3.15.3 cn` 注意：cn的使用是使用镜像站，可以去掉不用  | 安装helm、k3s工具  |
 |4| docker检查与登录 | `bash EulerCopilot/euler-copilot-helm/scripts/prepare_docker.sh` | docker版本检查与升级、登录镜像仓      |
-|5| 大模型准备      | 提供openai接口或基于硬件部署   |   使用官网的openai接口或按照附录建议方式部署  |
+|5| 大模型准备      | 提供第三方openai接口或基于硬件部署   |   使用第三方官网的openai接口或按照附录建议方式部署  |
 
 ## EulerCopilot安装
 
@@ -164,7 +163,7 @@ root@openeuler:~# python3
 Python 3.10.12 (main, Mar 22 2024, 16:50:05) [GCC 11.4.0] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import hashlib
->>> hashlib.sha256("密码".encode('utf-8')).hexdigest()
+>>> hashlib.sha256("[密码]".encode('utf-8')).hexdigest()
 'f1db188c86b9f7cf154922a525891b807a6df8a44ad0fbace0cfe5840081a507'
 # 保存生成加密后的密码
 # 2.插入账号密码到mysql数据库
@@ -172,7 +171,7 @@ root@openeuler:~# kubectl -n euler-copilot exec -it mysql-deploy-service-c7857c7
 bash-5.1# mysql -uroot -p8ZMTsY4@dgWZqoM6
 # 密码在EulerCopilot/euler-copilot-helm/chart/values.yaml的mysql章节查看
 mysql> use euler_copilot;
-mysql> insert into user(user_sub, passwd) values ("用户名", "加密后的密码");
+mysql> insert into user(user_sub, passwd) values ("[用户名]", "[加密后的密码]");
 mysql> exit;
 ```
 ### 2. 问答验证
@@ -186,7 +185,7 @@ mysql> exit;
   1. 修改values.yaml的pg的镜像仓为`pg-data`
   2. 修改values.yaml的rag部分的字段`knowledgebaseID: openEuler_2bb3029f`
   3. 将`vim EulerCopilot/euler-copilot-helm/chart/templates/pgsql/pgsql-deployment.yaml`的volume相关字段注释
-  4. 进入`cd EulerCopilot/euler-copilot-helm/chart`，执行更新服务`helm upgrade -n euler-copilot server .`
+  4. 进入`cd EulerCopilot/euler-copilot-helm/chart`，执行更新服务`helm upgrade -n euler-copilot service .`
   5. 进入网页端进行openEuler专业知识领域的问答
 ### 2. 构建项目专属知识领域智能问答
 详细信息请参考文档 [EulerCopilot本地语料上传指南](https://gitee.com/openeuler/EulerCopilot/blob/master/docs/EulerCopilot%E6%9C%AC%E5%9C%B0%E8%AF%AD%E6%96%99%E4%B8%8A%E4%BC%A0%E6%8C%87%E5%8D%97.md)
