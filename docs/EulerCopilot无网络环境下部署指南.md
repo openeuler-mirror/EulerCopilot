@@ -21,9 +21,8 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 | 类型        |  版本要求                         |  说明                                |
 |------------| -------------------------------------|--------------------------------------|
 | 操作系统    | openEuler 22.03 LTS及以上版本         | 无                                   |
-| K3s        | >= v1.29.0，带有Traefik Ingress工具   | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
-| Docker     | >= v25.4.0                           | Docker提供一个独立的运行应用程序环境    |
-| Helm       | >= v3.14.4                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
+| K3s        | >= v1.30.2，带有Traefik Ingress工具   | K3s提供轻量级的 Kubernetes集群，易于部署和管理 |
+| Helm       | >= v3.15.3                           | Helm是一个 Kubernetes的包管理工具，其目的是快速安装、升级、卸载Eulercopilot服务 |
 | python     | >=3.9.9                              | python3.9.9以上版本为模型的下载和安装提供运行环境 |
  
 
@@ -40,7 +39,8 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 
 注意： 
 1. 若无GPU或NPU资源，建议通过调用openai接口的方式来实现功能。(接口样例：https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions)
-2. 调用openai接口的方式不需要安装高版本的docker(>= v25.4.0)、python(>=3.9.9)
+2. 调用openai接口的方式不需要安装高版本的python(>=3.9.9)
+3. 英伟达GPU对Docker的支持必需要新版本Docker（>= v25.4.0）
 
 ### 部署视图
 ![EulerCopilot部署图](./pictures/EulerCopilot部署视图.png)
@@ -48,7 +48,11 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 ## 获取EulerCopilot
 - 从EulerCopilot的官方Git仓库[EulerCopilot](https://gitee.com/openeuler/EulerCopilot)下载最新的部署仓库
 - 如果您正在使用Kubernetes，则不需要安装k3s工具。
-
+```bash
+# 下载目录以home为例
+cd /home
+git clone https://gitee.com/openeuler/EulerCopilot
+```
 ## 环境准备
 如果您的服务器、硬件、驱动等全部就绪，即可启动环境初始化流程，以下部署步骤在无公网环境执行。
 
@@ -80,13 +84,22 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
   setenforce 0
   ```
 ### 2. 文件下载
-- 模型文件下载
-  - 需要下载模型文件bge-reranker-large、bge-mixed-model和分词工具text2vec-base-chinese-paraphrase
-  - bge-mixed-model下载链接：[https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/bge-mixed-model.rar]
-  - bge-reranker-large下载链接: [https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/bge-reranker-large.rar]
-  - text2vec-base-chinese-paraphrase下载链接：[https://eulercopilot.obs.cn-east-3.myhuaweicloud.com/models/text2vec-base-chinese-paraphrase.rar]
+- 模型文件bge-reranker-large、bge-mixed-model下载 [模型文件下载链接](https://repo.oepkgs.net/openEuler/rpm/openEuler-22.03-LTS/contrib/EulerCopilot/)
+  ```bash
+  mkdir -p /home/EulerCopilot/models
+  cd /home/EulerCopilot/models
+  # 将需要下载的bge文件放置在models目录
+  wget https://repo.oepkgs.net/openEuler/rpm/openEuler-22.03-LTS/contrib/EulerCopilot/bge-mixed-model.tar.gz
+  wget https://repo.oepkgs.net/openEuler/rpm/openEuler-22.03-LTS/contrib/EulerCopilot/bge-reranker-large.tar.gz
+  ```
+- 下载分词工具text2vec-base-chinese-paraphrase [分词工具下载链接](https://repo.oepkgs.net/openEuler/rpm/openEuler-22.03-LTS/contrib/EulerCopilot/)  
+  ```bash
+  mkdir -p /home/EulerCopilot/text2vec
+  cd /home/EulerCopilot/text2vec
+  wget https://repo.oepkgs.net/openEuler/rpm/openEuler-22.03-LTS/contrib/EulerCopilot/text2vec-base-chinese-paraphrase.tar.gz
+  ```
 - 镜像包下载
-  - arm架构或x86架构的EulerCopilot服务的各组件镜像下载地址单独提供
+  - x86或arm架构的EulerCopilot服务的各组件镜像单独提供
 
 ### 3. 安装部署工具
 #### 3.1 安装docker
@@ -134,16 +147,22 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
   ```
 
 #### 3.3 安装Helm工具
-以当前的最新版本“3.15.0”、x86_64架构为例，运行如下命令：
+- x86_64架构
   ```bash
   wget https://get.helm.sh/helm-v3.15.0-linux-amd64.tar.gz
   tar -xzf helm-v3.15.0-linux-amd64.tar.gz
   mv linux-amd64/helm /usr/sbin
   rm -rf linux-amd64
   ```
+- arm64架构
+  ```bash
+  wget https://get.helm.sh/helm-v3.15.0-linux-arm64.tar.gz
+  tar -xzf helm-v3.15.0-linux-arm64.tar.gz
+  mv linux-arm64/helm /usr/sbin
+  rm -rf linux-arm64
+  ```
 #### 3.4 大模型准备
-提供openai接口或根据硬件型号进行大模型部署，GPU服务器可参考附录的相关指令进行部署，
-NPU910B可参考[stable-diffusionxl模型-推理指导](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/）built-in/foundation_models/stable_diffusionxl)进行部署。
+提供第三方openai接口或基于硬件本都部署大模型，本地部署大模型可参考附录部分。
 
 ## EulerCopilot安装
 
@@ -151,7 +170,7 @@ NPU910B可参考[stable-diffusionxl模型-推理指导](https://gitee.com/ascend
 
 ###  1. 编辑配置文件
 ```bash
-# 进入EulerCopilot仓库目录，该目录包含文档目录和Helm安装配置文件目录
+# 下载目录以home为例，进入EulerCopilot仓库的Helm配置文件目录
 root@openeuler:~# cd /home/EulerCopilot
 root@openeuler:/home/EulerCopilot# ll
 total 28
@@ -166,7 +185,7 @@ total 28
 drwxr-xr-x 10 root root 4096 Aug 28 17:55 templates/
 -rw-r--r--  1 root root 6572 Aug 30 12:05 values.yaml
 
-# 编辑values.yaml配置文件
+# 编辑values.yaml配置文件,请结合YAML中的注释部分进行修改
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# vim values.yaml
 # 注意事项：  
 # - 修改domain为服务器的实际IP地址。  
@@ -192,9 +211,12 @@ root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# kubectl apply -
 ```
 ###  2. 安装EulerCopilot
 ```bash
-root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart_ssl/# cd ../chart
-root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# kubectl create namespace -n euler-copilot
+# 创建namespace
+root@openeuler:~# cd /home/EulerCopilot/euler-copilot-helm/chart
+root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# kubectl create namespace euler-copilot
+# 设置环境变量
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+# 安装EulerCopilot
 root@openeuler:/home/EulerCopilot/euler-copilot-helm/chart# helm install -n euler-copilot service .
 ```
 
@@ -211,30 +233,41 @@ rag-deploy-service-5b7887644c-sm58z         2/2     Running   0          110m
 redis-deploy-service-f8866b56-kj9jz         1/1     Running   0          17d
 vectorize-deploy-service-57f5f94ccf-sbhzp   2/2     Running   0          17d
 web-deploy-service-74fbf7999f-r46rg         1/1     Running   0          2d
-root@openeuler:~# kubectl -n euler-copilot get events
-root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot
-# 进入到pg数据库，执行扩展命令
+
+# 进入到postgres数据库，执行扩展命令
 root@openeuler:~# kubectl -n euler-copilot exec -it pgsql-deploy-service-86b4dc4899-ppltc -- bash
 root@pgsql-deploy-b4cc79794-qn8zd:/tmp# psql -U postgres -d postgres
 psql (16.2 (Debian 16.2-1.pgdg120+2))
 输入 "help" 来获取帮助信息.
 postgres=# CREATE EXTENSION zhparser;
-CREATE EXTENSION
 postgres=# CREATE EXTENSION vector;
 postgres=# CREATE TEXT SEARCH CONFIGURATION zhparser (PARSER = zhparser);
 postgres=# ALTER TEXT SEARCH CONFIGURATION zhparser ADD MAPPING FOR n,v,a,i,e,l WITH simple;
 postgres=# exit
 root@pgsql-deploy-b4cc79794-qn8zd:/tmp# exit
 exit
-
-# 注意事项：
-# 如果Pod状态出现失败，建议按照以下步骤进行排查：
-# 1. 检查EulerCopilot的 rag的Pod日志，以确定是否有错误信息或异常行为。
-# 2. 验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
-# 3. 查看相关的服务(Service)和部署(Deployment)配置，确保所有配置均正确无误。
-# 4. 如果问题依然存在，可以考虑查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息。
 ```
-
+注意：如果Pod状态出现失败，建议按照以下步骤进行排查
+1. 查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息
+   ```bash
+   root@openeuler:~# kubectl -n euler-copilot get events
+   ```
+2. 查看镜像拉取是否成功
+   ```bash
+   root@openeuler:~# k3s crictl images
+   ```
+3. 检查EulerCopilot的 rag的Pod日志，以确定是否有错误信息或异常行为。
+   ```bash
+   root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot
+   ```
+4. 验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
+   ```bash
+   root@openeuler:~# df -h
+   ```
+5. 如果未拉取成且镜像大小为0，请检查是否是k3s版本未满足要求，低于v1.30.2
+   ```bash
+   root@openeuler:~# k3s -v
+   ```
 ## 验证安装
 
 访问EulerCopilot Web界面，请在浏览器中输入https://$(host_ip):8080（其中port默认值为8080，若更改则需相应调整）。
@@ -314,7 +347,7 @@ llm:
     max_tokens: 8192
 ```
 #### NPU环境
-待补充
+NPU环境部署可参考链接[MindIE安装指南](https://www.hiascend.com/document/detail/zh/mindie/10RC2/whatismindie/mindie_what_0001.html)
 
 ## FAQ
 ### 1. huggingface使用报错？

@@ -3,21 +3,21 @@ globals:
   # 部署实例数
   replicaCount: 1
   # 镜像仓库
-  imageRegistry: "swr.cn-southwest-2.myhuaweicloud.com/euler-copilot"
+  imageRegistry: "hub.oepkgs.net/neocopilot"
   # 镜像仓库鉴权
   imagePullSecrets:
     - name: euler-copilot-registry
   # 镜像拉取策略
   imagePullPolicy: IfNotPresent
   # 部署域名
-  domain: ""   # 需要修改为域名或内网IP
+  domain: ""                                # 需要修改为域名或内网IP
   # 大模型配置
   llm:
     # 开源大模型，OpenAI兼容接口
     openai:
-      url: ""   # 需要根据大模型部署修改
-      key: ""   # 需要根据大模型部署修改
-      model: "Qwen1.5-32B-chat-GPTQ-Int4"   # 需要根据大模型部署修改
+      url: "http://120.46.78.178:8000/"      # 需要根据大模型部署修改URL
+      key: "sk-123456"                       # 需要根据大模型部署修改openai_key
+      model: "Qwen1.5-32B-chat-GPTQ-Int4"    # 需要根据大模型部署修改mode_name
       max_tokens: 8192
     # Llama模型，用于部分功能场景
     llama:
@@ -75,7 +75,7 @@ euler_copilot:
       # 镜像名
       repository: redis
       # 镜像标签
-      tag: alpine   # ARM架构tag修改alpine-arm
+      tag: 7.4-alpine   # ARM架构tag修改7.4-alpine-arm
       # 拉取策略。留空则使用全局设置
       imagePullPolicy: ""
     # 性能限制设置
@@ -96,7 +96,7 @@ euler_copilot:
     # 镜像设置
     image:
       # 镜像仓库。留空则使用全局设置。
-      registry: "hub.oepkgs.net/neocopilot"
+      registry: ""
       # 镜像名
       repository: pgsql-empty  # 带语料的pg镜像名是pgsql-data
       # 镜像标签
@@ -127,7 +127,7 @@ euler_copilot:
       # 镜像名
       repository: euler-copilot-vectorize-agent
       # 镜像标签
-      tag: "20240430"    # ARM架构tag修改20240430-arm
+      tag: "430-release"    # ARM架构tag修改430-release-arm
       # 拉取策略。留空则使用全局设置。
       imagePullPolicy: ""
     # 容器根目录只读
@@ -137,7 +137,7 @@ euler_copilot:
     # Volume设置
     volume:
       # bge模型的位置
-      models: /home/euler-copilot/models 
+      models: /home/EulerCopilot/models  # 需要根据实际下载路径修改
     # Service设置
     service:
       # Service类型，ClusterIP或NodePort
@@ -153,7 +153,7 @@ euler_copilot:
     # 镜像设置
     image:
       # 镜像仓库。留空则使用全局设置。
-      registry: "hub.oepkgs.net/neocopilot"
+      registry: ""
       # 镜像名
       repository: euler-copilot-rag
       # 镜像标签
@@ -173,7 +173,7 @@ euler_copilot:
     # RAG内知识库名
     knowledgebaseID: default_test
     # 待向量化的文档位置
-    docs_dir: "/home/euler-copilot/docs"  # 需要修改为语料文档目录
+    docs_dir: "/home/EulerCopilot/corpus"  # 需要创建此目录作为语料文档目录
   
   # 部署Framework
   framework:
@@ -185,7 +185,7 @@ euler_copilot:
       # 镜像名
       repository: euler-copilot-framework
       # 镜像标签
-      tag: "20240430"     # ARM架构tag修改20240430-arm
+      tag: "430-release"     # ARM架构tag修改430-release-arm
       # 拉取策略。留空则使用全局设置
       imagePullPolicy: ""
     # 容器根目录只读
@@ -199,7 +199,7 @@ euler_copilot:
       nodePort:
     # Volume设置
     volume:
-      text2vec: /home/euler-copilot/text2vec-base-chinese-paraphrase
+      text2vec: /home/EulerCopilot/text2vec/text2vec-base-chinese-paraphrase    # 需要根据实际下载路径修改
     # JWT Key
     jwtKey: 6vJZbyFlfJgXFAuNlQaUdOChVLm5aLTC
   
@@ -213,8 +213,8 @@ euler_copilot:
       # 镜像名
       repository: euler-copilot-web
       # 镜像标签
-      tag: "20240430"    # ARM架构tag修改20240430-arm
-      # 拉取策略。留空则使用全局设置
+      tag: "430-release"    # ARM架构tag修改430-release-arm
+      # 拉取策略。留空则使用全局设置30
       imagePullPolicy: ""
     # 容器根目录只读
     readOnly: true
