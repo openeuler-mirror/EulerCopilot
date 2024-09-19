@@ -49,17 +49,11 @@ EulerCopilot是一款智能问答工具，使用EulerCopilot可以解决操作�
 ```bash
 # 下载目录以home为例
 cd /home
-git clone https://gitee.com/openeuler/euler-copilot-framework
+git clone https://gitee.com/openeuler/EulerCopilot
 ```
 
 ## 环境准备
-设备需联网并符合EulerCopilot的最低软硬件要求。确认服务器、硬件、驱动等准备就绪后，即可开始环境准备工作。为了顺利进行后续操作，请按照指引，先进入我
-们的脚本部署目录，并且按照提供的操作步骤和脚本路径依次执行，以确保初始化成功。
-```bash
-# 进入部署脚本目录
-cd /home/euler-copilot-framework/euler-copilot-helm/scripts
-```
-
+设备需联网并符合EulerCopilot的最低软硬件要求。确认服务器、硬件、驱动等准备就绪后，即可开始环境准备工作。为了顺利进行后续操作，请按照指引，先进入脚本部署目录`/home/EulerCopilot/euler-copilot-helm/scripts`，并且按照提供的操作步骤和脚本路径依次执行，以确保初始化成功。
 |      序号    | 步骤内容     |    相关指令        |        说明    |
 |-------------- |----------|---------------------------------------------|------------------------------------------ |
 |1| 环境检查        | `bash check_env.sh`      | 主要对服务器的主机名、DNS、防火墙设置、磁盘剩余空间大小、网络、检查SELinux的设置  |
@@ -151,28 +145,19 @@ postgres=# ALTER TEXT SEARCH CONFIGURATION zhparser ADD MAPPING FOR n,v,a,i,e,l 
 postgres=# exit
 root@pgsql-deploy-b4cc79794-qn8zd:/tmp# exit
 exit
+
+# 注意：如果Pod状态出现失败，建议按照以下步骤进行排查
+# 1.查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息
+root@openeuler:~# kubectl -n euler-copilot get events
+# 2.查看镜像拉取是否成功
+root@openeuler:~# k3s crictl images
+# 3.检查EulerCopilot的 rag的Pod日志，以确定是否有错误信息或异常行为。
+root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot
+# 4.验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
+root@openeuler:~# df -h
+# 5.如果未拉取成且镜像大小为0，请检查是否是k3s版本未满足要求，低于v1.30.2
+root@openeuler:~# k3s -v
 ```
-注意：如果Pod状态出现失败，建议按照以下步骤进行排查
-1. 查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息
-   ```bash
-   root@openeuler:~# kubectl -n euler-copilot get events
-   ```
-2. 查看镜像拉取是否成功
-   ```bash
-   root@openeuler:~# k3s crictl images
-   ```
-3. 检查EulerCopilot的 rag的Pod日志，以确定是否有错误信息或异常行为。
-   ```bash
-   root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot
-   ```
-4. 验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
-   ```bash
-   root@openeuler:~# df -h
-   ```
-5. 如果未拉取成且镜像大小为0，请检查是否是k3s版本未满足要求，低于v1.30.2
-   ```bash
-   root@openeuler:~# k3s -v
-   ```
 ## 验证安装
 
 访问EulerCopilot Web界面，请在浏览器中输入https://$(host_ip):8080（其中port默认值为8080，若更改则需相应调整）。

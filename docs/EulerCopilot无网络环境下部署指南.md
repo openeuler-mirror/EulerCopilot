@@ -246,28 +246,19 @@ postgres=# ALTER TEXT SEARCH CONFIGURATION zhparser ADD MAPPING FOR n,v,a,i,e,l 
 postgres=# exit
 root@pgsql-deploy-b4cc79794-qn8zd:/tmp# exit
 exit
+
+# 注意：如果Pod状态出现失败，建议按照以下步骤进行排查
+# 1.查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息
+root@openeuler:~# kubectl -n euler-copilot get events
+# 2.查看镜像拉取是否成功
+root@openeuler:~# k3s crictl images
+# 3.检查EulerCopilot的 rag的Pod日志，以确定是否有错误信息或异常行为。
+root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot
+# 4.验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
+root@openeuler:~# df -h
+# 5.如果未拉取成且镜像大小为0，请检查是否是k3s版本未满足要求，低于v1.30.2
+root@openeuler:~# k3s -v
 ```
-注意：如果Pod状态出现失败，建议按照以下步骤进行排查
-1. 查看Kubernetes集群的事件(Events)，以获取更多关于Pod失败的上下文信息
-   ```bash
-   root@openeuler:~# kubectl -n euler-copilot get events
-   ```
-2. 查看镜像拉取是否成功
-   ```bash
-   root@openeuler:~# k3s crictl images
-   ```
-3. 检查EulerCopilot的 rag的Pod日志，以确定是否有错误信息或异常行为。
-   ```bash
-   root@openeuler:~# kubectl logs rag-deploy-service-5b7887644c-sm58z -n euler-copilot
-   ```
-4. 验证Kubernetes集群的资源状态，确保没有资源限制或配额问题导致Pod无法正常运行。
-   ```bash
-   root@openeuler:~# df -h
-   ```
-5. 如果未拉取成且镜像大小为0，请检查是否是k3s版本未满足要求，低于v1.30.2
-   ```bash
-   root@openeuler:~# k3s -v
-   ```
 ## 验证安装
 
 访问EulerCopilot Web界面，请在浏览器中输入https://$(host_ip):8080（其中port默认值为8080，若更改则需相应调整）。
