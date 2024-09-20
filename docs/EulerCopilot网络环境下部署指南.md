@@ -195,7 +195,7 @@ mysql> exit;
   4. 进入`cd EulerCopilot/euler-copilot-helm/chart`，执行更新服务`helm upgrade -n euler-copilot service .`
   5. 进入网页端进行openEuler专业知识领域的问答
 ### 2. 构建项目专属知识领域智能问答
-详细信息请参考文档 [EulerCopilot本地语料上传指南](https://gitee.com/openeuler/EulerCopilot/blob/master/docs/EulerCopilot%E6%9C%AC%E5%9C%B0%E8%AF%AD%E6%96%99%E4%B8%8A%E4%BC%A0%E6%8C%87%E5%8D%97.md)
+详细信息请参考文档 [EulerCopilot本地资产库构建指南.md](https://gitee.com/openeuler/EulerCopilot/blob/master/docs/EulerCopilot%E6%9C%AC%E5%9C%B0%E8%B5%84%E4%BA%A7%E5%BA%93%E6%9E%84%E5%BB%BA%E6%8C%87%E5%8D%97.md)
 
 ## 附录
 ### 大模型准备

@@ -21,8 +21,6 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         fsGroup: 1001
-      imagePullSecrets:
-        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
       containers:
         - name: vectorize
           image: "{{ if ne ( .Values.euler_copilot.vectorize.image.registry | toString) "" }}{{ .Values.euler_copilot.vectorize.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.vectorize.image.repository }}:{{ .Values.euler_copilot.vectorize.image.tag | toString }}"
