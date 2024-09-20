@@ -19,8 +19,6 @@ spec:
         app: pgsql-{{ .Release.Name }}
     spec:
       automountServiceAccountToken: false
-      imagePullSecrets:
-        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
       containers:
         - name: pgsql
           image: "{{if ne ( .Values.euler_copilot.pgsql.image.registry | toString ) ""}}{{ .Values.euler_copilot.pgsql.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.pgsql.image.repository }}:{{ .Values.euler_copilot.pgsql.image.tag | toString }}"

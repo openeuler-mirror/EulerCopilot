@@ -21,8 +21,6 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         fsGroup: 1001
-      imagePullSecrets:
-        {{- toYaml .Values.globals.imagePullSecrets | nindent 8 }}
       containers:
         - name: framework
           image: "{{if ne ( .Values.euler_copilot.framework.image.registry | toString ) ""}}{{ .Values.euler_copilot.framework.image.registry }}{{ else }}{{ .Values.globals.imageRegistry }}{{ end }}/{{ .Values.euler_copilot.framework.image.repository }}:{{ .Values.euler_copilot.framework.image.tag | toString }}"

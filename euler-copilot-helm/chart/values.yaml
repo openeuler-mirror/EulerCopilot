@@ -4,9 +4,6 @@ globals:
   replicaCount: 1
   # 镜像仓库
   imageRegistry: "hub.oepkgs.net/neocopilot"
-  # 镜像仓库鉴权
-  imagePullSecrets:
-    - name: euler-copilot-registry
   # 镜像拉取策略
   imagePullPolicy: IfNotPresent
   # 部署域名

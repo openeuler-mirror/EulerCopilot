@@ -39,7 +39,7 @@ function download_small_model {
     export HF_ENDPOINT=https://hf-mirror.com;
     
     # 下载reranker
-    huggingface-cli download --resume-download "BAAI/$RERANKER" --local-dir $(echo $RERANKER | cut -d "/" -f 2);
+    huggingface-cli download --resume-download $RERANKER --local-dir $(echo $RERANKER | cut -d "/" -f 2);
     if [[ $? -ne 0 ]]; then
         echo -e "[Error]下载模型权重失败：$RERANKER \033[0m";
         return 1;
