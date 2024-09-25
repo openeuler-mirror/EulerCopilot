@@ -1,4 +1,6 @@
 #!/bin/bash
+
+
 function check_user {
     if [[ $(id -u) -ne 0 ]]; then
         echo -e "\033[31m[Error]请以root权限运行该脚本！\033[0m";
@@ -188,16 +190,20 @@ function check_disk {
 
 function check_network {
     echo -e "[Info]正在检查当前机器网络情况";
-    if [[ -x $(command -v curl) ]]; then
+    # 检查curl是否已安装
+    if ! command -v curl &> /dev/null; then
         echo -e "\033[31m[Error]Curl不存在，将进行安装\033[0m";
-        yum install -y curl;
-        if [[ $? -ne 0 ]]; then
+        # 尝试使用yum安装curl
+        if yum install -y curl; then
+            echo -e "\033[32m[Success]Curl安装成功\033[0m";
+        else
             echo -e "\033[31m[Error]Curl安装失败\033[0m";
             return 1;
         fi
+    else
+        echo -e "\033[32m[Success]Curl已存在\033[0m";
     fi
-
-    curl https://swr.cn-southwest-2.myhuaweicloud.com --connect-timeout 5 -s > /dev/null;
+    curl https://hub.oepkgs.net/neocopilot --connect-timeout 5 -s
     if [[ $? -ne 0 ]]; then
         echo -e "\033[31m[Error]当前机器网络无法连接至镜像仓库，请检查网络配置，或使用离线部署方案\033[0m";
         return 1;
