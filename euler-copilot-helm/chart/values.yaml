@@ -196,7 +196,7 @@ euler_copilot:
       nodePort:
     # Volume设置
     volume:
-      text2vec: /home/EulerCopilot/text2vec/text2vec-base-chinese-paraphrase    # 需要根据实际下载路径修改
+      text2vec: /home/EulerCopilot/models/text2vec-base-chinese-paraphrase    # 需要根据实际下载路径修改
     # JWT Key
     jwtKey: 6vJZbyFlfJgXFAuNlQaUdOChVLm5aLTC
   
