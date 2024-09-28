@@ -105,7 +105,7 @@ optional arguments:
 ### 步骤1：配置数据库和rag信息
 - #### 配置数据库信息（初始化）
 ```bash
-python3 scripts/rag_kb_manager.pyc --method init_database_info  --database_url postgresql+psycopg2://postgres:123456@{dabase_url}:{databse_port}/postgres
+python3 scripts/rag_kb_manager.pyc --method init_database_info  --database_url postgresql+psycopg2://postgres:123456@{database_url}:{database_port}/postgres
 ```
 **注意：**
 **{dabase_url}**为k8s集群内访问postgres服务的url，请根据具体情况修改，一般为**{postgres_servive_name}-{{ .Release.Name }}.\<namespace\>.svc.cluster.local**格式，其中**{postgres_servive_name}**可以从**databEulerCopilot/ euler-copilot-helm / chart / templates / pgsql / pgsql-service.yaml**找到：
@@ -121,7 +121,7 @@ helm install my-release-name --namespace my-namespace path/to/chart
 ![](./pictures/postgres服务端口.png)
 数据库信息配置命令执行命令完成之后会在scripts/config下出现database_info.json文件，文件内容如下：
 ```bash
-{"database_url": "postgresql+psycopg2://postgres:123456@{dabase_url}:{databse_port}/postgres"}
+{"database_url": "postgresql+psycopg2://postgres:123456@{database_url}:{database_port}/postgres"}
 ```
 下面是命令执行成功的截图：
 
